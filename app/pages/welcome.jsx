@@ -3,7 +3,6 @@
 
 var React = require("react"),
     Greeting = require("components/greeting"),
-    Test = require("components/test"),
     technologies = require("technologies");
 
 module.exports = React.createClass({
@@ -20,7 +19,6 @@ module.exports = React.createClass({
     render: function(){
         return <div className="container">
             <Greeting />
-            <Test />
             <span className="lead">For all your Backbone+Flux+React needs.</span>
             <h3>Technologies</h3>
             { this.getTechnologies() }

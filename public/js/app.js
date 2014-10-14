@@ -149,7 +149,7 @@ function getRandom(min, max) {
 }
 });
 
-;require.register("components/test", function(exports, require, module) {
+;require.register("components/header", function(exports, require, module) {
 /** @jsx React.DOM */
 /* jshint node: true */
 "use strict";
@@ -157,17 +157,6 @@ function getRandom(min, max) {
 var React = require("react");
 
 module.exports = React.createClass({displayName: 'exports',
-    componentWillMount: function() {
-        var that = this;
-        setInterval(function() {
-            that.forceUpdate();  
-        }, 500); 
-    },
-    
-    getTestValue: function() {
-        return new Date().getTime();  
-    },
-    
     render: function () {
         return React.DOM.span(null,  this.getTestValue() );
     }
@@ -237,7 +226,6 @@ require.register("pages/welcome", function(exports, require, module) {
 
 var React = require("react"),
     Greeting = require("components/greeting"),
-    Test = require("components/test"),
     technologies = require("technologies");
 
 module.exports = React.createClass({displayName: 'exports',
@@ -254,7 +242,6 @@ module.exports = React.createClass({displayName: 'exports',
     render: function(){
         return React.DOM.div({className: "container"}, 
             Greeting(null), 
-            Test(null), 
             React.DOM.span({className: "lead"}, "For all your Backbone+Flux+React needs."), 
             React.DOM.h3(null, "Technologies"), 
              this.getTechnologies() 
