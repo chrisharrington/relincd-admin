@@ -1,0 +1,28 @@
+{
+  "name": "your-app",
+  "version": "0.1.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components"
+  ],
+  "dependencies": {
+    "react": "~0.11.2",
+    "jquery": "~2.1.1",
+    "underscore": "~1.7.0",
+    "backbone": "~1.1.2",
+    "moment": "~2.8.3",
+    "marionette": "~2.2.1",
+    "bootstrap": "~3.2.0",
+    "fontawesome": "~4.2.0",
+    "flux": "~2.0.2"
+  },
+  "overrides": {
+    "react": {
+      "main": "react-with-addons.js"
+    }
+  },
+  "resolutions": {
+    "underscore": "~1.7.0"
+  }
+}
