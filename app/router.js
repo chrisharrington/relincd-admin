@@ -5,6 +5,6 @@ var Backbone = require("backbone");
 
 module.exports = Backbone.Marionette.AppRouter.extend({
     appRoutes: {
-        "": "show"
+        "": "management"
     }
 });

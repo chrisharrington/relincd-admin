@@ -7875,5 +7875,19 @@ button.close {
   content: "\f20c";
 }
 
+body>div.content {
+  position: relative;
+  top: 50px;
+  padding: 15px 0;
+}
+.navbar .logo {
+  color: #f28e41;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.navbar .logo:hover {
+  color: #f28e41 !important;
+}
+
 
 /*# sourceMappingURL=app.css.map*/

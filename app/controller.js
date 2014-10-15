@@ -2,15 +2,15 @@
 "use strict";
 
 var React = require("react"),
-    Welcome = require("pages/welcome");
+    Management = require("pages/management");
 
 var Controller = Backbone.Marionette.Controller.extend({
     initialize: function (options) {
         this.container = options.container;
     },
 
-    show: function () {
-        React.renderComponent(new Welcome(), this.container);
+    management: function () {
+        React.renderComponent(new Management(), this.container);
     }
 });
 

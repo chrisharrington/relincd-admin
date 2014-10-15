@@ -168,15 +168,15 @@ require.register("controller", function(exports, require, module) {
 "use strict";
 
 var React = require("react"),
-    Welcome = require("pages/welcome");
+    Management = require("pages/management");
 
 var Controller = Backbone.Marionette.Controller.extend({
     initialize: function (options) {
         this.container = options.container;
     },
 
-    show: function () {
-        React.renderComponent(new Welcome(), this.container);
+    management: function () {
+        React.renderComponent(new Management(), this.container);
     }
 });
 
@@ -219,32 +219,17 @@ $(function () {
 
 });
 
-require.register("pages/welcome", function(exports, require, module) {
+require.register("pages/management", function(exports, require, module) {
 /** @jsx React.DOM */
 /* jshint node: true */
 "use strict";
 
-var React = require("react"),
-    Greeting = require("components/greeting"),
-    technologies = require("technologies");
+var React = require("react");
 
 module.exports = React.createClass({displayName: 'exports',
-    getTechnologies: function(){
-        var items = _.map(technologies.get(), function(item){
-            return React.DOM.li({key:  item.name}, React.DOM.a({href:  item.href, target:  item.name},  item.name));
-        });
-
-        return React.DOM.ul(null, 
-            items 
-        )
-    },
-
     render: function(){
         return React.DOM.div({className: "container"}, 
-            Greeting(null), 
-            React.DOM.span({className: "lead"}, "For all your Backbone+Flux+React needs."), 
-            React.DOM.h3(null, "Technologies"), 
-             this.getTechnologies() 
+            "management"
         );
     }
 });
@@ -258,7 +243,7 @@ var Backbone = require("backbone");
 
 module.exports = Backbone.Marionette.AppRouter.extend({
     appRoutes: {
-        "": "show"
+        "": "management"
     }
 });
 });
@@ -287,57 +272,6 @@ store.dispatchToken = dispatcher.register(function dispatchCallback(payload) {
 });
 
 module.exports = store;
-});
-
-require.register("technologies", function(exports, require, module) {
-var technologies = [
-    {
-        "name": "React",
-        "href": "http://facebook.github.io/react"
-    },
-    {
-        "name": "Flux",
-        "href": "http://facebook.github.io/flux"
-    },
-    {
-        "name": "jQuery",
-        "href": "http://jquery.com"
-    },
-    {
-        "name": "Underscore",
-        "href": "http://underscorejs.org"
-    },
-    {
-        "name": "Backbone",
-        "href": "http://backbonejs.org"
-    },
-    {
-        "name": "Backbone Marionette",
-        "href": "http://marionettejs.com"
-    },
-    {
-        "name": "Moment",
-        "href": "http://momentjs.com"
-    },
-    {
-        "name": "Stylus",
-        "href": "http://learnboost.github.io/stylus"
-    },
-    {
-        "name": "Bootstrap",
-        "href": "http://getbootstrap.com"
-    },
-    {
-        "name": "Font Awesome",
-        "href": "http://fortawesome.github.io/Font-Awesome"
-    }
-];
-
-module.exports = {
-    get: function(){
-        return JSON.parse(JSON.stringify(technologies));
-    }
-};
 });
 
 
