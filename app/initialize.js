@@ -2,21 +2,15 @@
 "use strict";
 
 var app = require("application"),
+	Header = require("components/header"),
     Controller = require("controller"),
-    Router = require("router"),
-    cityDispatcher = require("dispatchers/city");
+    Router = require("router");
 
 $(function () {
     app.addInitializer(function initializeRouter() {
-        var container = $("#app")[0];
+        new Router({controller: new Controller({container: $("#app")[0]})});
 
-        new Router({controller: new Controller({container: container})});
-    });
-
-    app.addInitializer(function(){
-        cityDispatcher.dispatch({
-            actionType: "fetch"
-        });
+		React.renderComponent(new Header(), $("header")[0]);
     });
 
     app.start();

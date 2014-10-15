@@ -107,49 +107,7 @@ app.on("start", function () {
 module.exports = app;
 });
 
-require.register("components/greeting", function(exports, require, module) {
-/** @jsx React.DOM */
-/* jshint node: true */
-"use strict";
-
-var React = require("react"),
-    cityStore = require("stores/city");
-
-module.exports = React.createClass({displayName: 'exports',
-    componentWillMount: function () {
-        cityStore.on("add remove reset", function () {
-            this.forceUpdate();
-        }, this);
-    },
-
-    componentWillUnmount: function(){
-        cityStore.off(null, null, this);
-    },
-
-    getName: function(){
-        if(cityStore.length === 0){
-            return this.getLoading();
-        }
-        else{
-            return React.DOM.span({className: "text-success"},  cityStore.at(getRandom(0, cityStore.length)).get("name") );
-        }
-    },
-
-    getLoading: function(){
-        return React.DOM.i({className: "fa fa-spinner fa-spin"});
-    },
-
-    render: function () {
-        return React.DOM.h1(null, "Hello, ",  this.getName() );
-    }
-});
-
-function getRandom(min, max) {
-    return Math.floor(Math.random() * (max - min)) + min;
-}
-});
-
-;require.register("components/header", function(exports, require, module) {
+require.register("components/header", function(exports, require, module) {
 /** @jsx React.DOM */
 /* jshint node: true */
 "use strict";
@@ -157,8 +115,39 @@ function getRandom(min, max) {
 var React = require("react");
 
 module.exports = React.createClass({displayName: 'exports',
+	getInitialState: function() {
+		return {
+			user: {}
+		};
+	},
+	
+	componentWillMount: function() {
+		this.setState({
+			user: {
+				name: "Chris"
+			}
+		})
+	},
+	
     render: function () {
-        return React.DOM.span(null,  this.getTestValue() );
+        return React.DOM.div({className: "navbar navbar-inverse navbar-fixed-top", role: "navigation"}, 
+      		React.DOM.div({className: "container"}, 
+        		React.DOM.div({className: "navbar-header"}, 
+          			React.DOM.a({className: "navbar-brand logo"}, "Relincd")
+        		), 
+        		React.DOM.div({className: "collapse navbar-collapse"}, 
+					React.DOM.ul({className: "nav navbar-nav"}, 
+						React.DOM.li({className: "active"}, React.DOM.a({href: "#"}, "Management")), 
+						React.DOM.li(null, React.DOM.a({href: "#about"}, "Company Hierarchies"))
+					), 
+					React.DOM.div({className: "account-info"}, 
+						React.DOM.span(null, "Welcome, ",  this.state.user.name, "!"), 
+						React.DOM.br(null), 
+						React.DOM.a(null, "Sign Out")
+					)
+        		)
+      		)
+		);
     }
 });
 });
@@ -197,21 +186,15 @@ require.register("initialize", function(exports, require, module) {
 "use strict";
 
 var app = require("application"),
+	Header = require("components/header"),
     Controller = require("controller"),
-    Router = require("router"),
-    cityDispatcher = require("dispatchers/city");
+    Router = require("router");
 
 $(function () {
     app.addInitializer(function initializeRouter() {
-        var container = $("#app")[0];
+        new Router({controller: new Controller({container: $("#app")[0]})});
 
-        new Router({controller: new Controller({container: container})});
-    });
-
-    app.addInitializer(function(){
-        cityDispatcher.dispatch({
-            actionType: "fetch"
-        });
+		React.renderComponent(new Header(), $("header")[0]);
     });
 
     app.start();
@@ -228,8 +211,9 @@ var React = require("react");
 
 module.exports = React.createClass({displayName: 'exports',
     render: function(){
-        return React.DOM.div({className: "container"}, 
-            "management"
+        return React.DOM.div({className: "container management-container"}, 
+            React.DOM.h1(null, "Management"), 
+			React.DOM.div({className: "actions"})
         );
     }
 });

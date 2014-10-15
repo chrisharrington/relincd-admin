@@ -9,6 +9,15 @@ header-height = 50px
 spacing = 15px
 
 
+// Mixins
+
+vertical-centre(height)
+	height height
+	line-height height !important
+	display inline-block
+	vertical-align middle
+
+
 // Main
 
 body>div.content { position:relative; top:header-height; padding:spacing 0; }
@@ -16,6 +25,21 @@ body>div.content { position:relative; top:header-height; padding:spacing 0; }
 
 // Header
 
-.navbar .logo { color:secondary-font-colour; font-weight:bold; text-transform:uppercase;
-    &:hover { color:secondary-font-colour !important; }
+header { 
+	.logo { color:secondary-font-colour !important; font-weight:bold; text-transform:uppercase;
+		&:hover { color:secondary-font-colour !important; }
+	}
+    
+	.account-info { float:right; color:white; font-size:0.875em; margin-top:8px;
+		>span { float:right; }
+		>a { float:right; cursor:pointer; }
+	}
+}
+
+
+// Management
+
+.management-container {
+	>h1 { float:left; }
+	>div.actions { float:right; }
 }
