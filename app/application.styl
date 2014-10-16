@@ -20,7 +20,8 @@ vertical-centre(height)
 
 // Main
 
-body>div.content { position:relative; top:header-height; padding:spacing 0; }
+h1, h2, h3, h4 { padding:0; margin:0; }
+body>div.content { position:relative; top:header-height+spacing; padding:spacing 0; }
 
 
 // Header
@@ -37,9 +38,21 @@ header {
 }
 
 
+// Modal
+
+.custom-modal {
+    .overlay { position:fixed; top:0; right:0; bottom:0; left:0; z-index:2; background:rgba(0, 0, 0, 0.6); }
+    .content { position:absolute; width:800px; padding:spacing; background:white; left:0; right:0; margin:auto; z-index:3; border-radius:3px; box-sizing:border-box; }
+}
+
+
 // Management
 
 .management-container {
 	>h1 { float:left; }
 	>div.actions { float:right; }
+    
+    .new-user-modal .content {
+        >input, >select { float:left; width:100%; margin-top:spacing; }
+    }
 }
