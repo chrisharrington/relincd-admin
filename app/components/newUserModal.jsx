@@ -11,17 +11,26 @@ module.exports = React.createClass({
 			loading: false,
             role: "Role...",
             roles: [],
+			roleError: false,
 			company: "Company...",
 			companies: [],
+			companyError: false,
 			operatingArea: "Operating Area...",
 			operatingAreas: [],
+			operatingAreaError: false,
 			firstName: "",
+			firstNameError: false,
 			lastName: "",
+			lastNameError: false,
 			phone: "",
+			phoneError: false,
 			email: "",
+			emailError: false,
 			password: "",
-			confirmedPassword: ""
-        }  
+			passwordError: false,
+			confirmedPassword: "",
+			confirmedPasswordError: false
+        }  ;
     },
 	
 	reset: function() {
@@ -33,8 +42,9 @@ module.exports = React.createClass({
 		this.setState({ loading: true });
 		
 		var user = _buildUser(this);
-		var blah = user.isValid(true);
-		debugger;
+		var error = user.validate();
+		if (error)
+			_setError(error);
 		
 		setTimeout(function() {
 			$("#new-user-modal").modal("hide");
@@ -42,10 +52,12 @@ module.exports = React.createClass({
 		}, 1000);
 		
 		function _buildUser(context) {
+			var initial = context.getInitialState();
+			
 			return new User({
-				role: context.state.role,
-				company: context.state.company,
-				operatingArea: context.state.operatingArea,
+				role: context.state.role === initial.role ? undefined : context.state.role,
+				company: context.state.company === initial.company ? undefined : context.state.company,
+				operatingArea: context.state.operatingArea === initial.operatingArea ? undefined : context.state.operatingArea,
 				firstName: undefined,
 				lastName: context.state.lastName,
 				phone: context.state.phone,
@@ -53,6 +65,13 @@ module.exports = React.createClass({
 				password: context.state.password,
 				confirmedPassword: context.state.confirmedPassword
 			});
+		}
+		
+		function _setError(error) {
+			for (var name in this.state)
+				if (name.endsWith("Error"))
+					this.state[name] = false;
+			this.state[error.key + "Error"] = true;
 		}
 	},
 	
@@ -89,21 +108,21 @@ module.exports = React.createClass({
                     </div>
                     <div className="modal-body container">
 						<div className="row">
-							<div className="col col-md-4">
+							<div className={"col col-md-4 form-group" + (this.state.roleError ? " has-error" : "")} data-validation-key="role">
 								<Dropdown placeholder={this.state.role} list={this.state.roles} select={this.setDropdownData.bind(this, "role")} />
 							</div>
-							<div className="col col-md-4">
+							<div className="col col-md-4 form-group">
 								<Dropdown placeholder={this.state.company} list={this.state.companies} select={this.setDropdownData.bind(this, "company")} />
 							</div>
-							<div className="col col-md-4">
+							<div className="col col-md-4 form-group">
 								<Dropdown placeholder={this.state.operatingArea} list={this.state.operatingAreas} select={this.setDropdownData.bind(this, "operatingArea")} />
 							</div>
 						</div>
 						<div className="row">
-							<div className="col col-md-6">
+							<div className="col col-md-6 form-group" data-validation-key="firstName">
 								<input type="text" className="form-control" value={this.state.firstName} onChange={this.setTextData.bind(this, "firstName")} placeholder="First name..." />
 							</div>
-							<div className="col col-md-6">
+							<div className="col col-md-6 form-group">
 								<input type="text" className="form-control" value={this.state.lastName} onChange={this.setTextData.bind(this, "lastName")} placeholder="Last name..." />
 							</div>
 						</div>

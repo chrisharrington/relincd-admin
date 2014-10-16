@@ -8361,13 +8361,25 @@ div.dropdown >button >i {
   vertical-align: middle;
 }
 
+h1,
+h2,
+h3,
+h4 {
+  padding: 0;
+  margin: 0;
+}
+body>div.content {
+  position: relative;
+  top: 65px;
+  padding: 15px 0;
+}
 header .logo {
-  color: secondary-font-colour !important;
+  color: #428bca !important;
   font-weight: bold;
   text-transform: uppercase;
 }
 header .logo:hover {
-  color: secondary-font-colour !important;
+  color: #428bca !important;
 }
 header .account-info {
   float: right;

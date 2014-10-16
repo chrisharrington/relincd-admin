@@ -193,17 +193,26 @@ module.exports = React.createClass({displayName: 'exports',
 			loading: false,
             role: "Role...",
             roles: [],
+			roleError: false,
 			company: "Company...",
 			companies: [],
+			companyError: false,
 			operatingArea: "Operating Area...",
 			operatingAreas: [],
+			operatingAreaError: false,
 			firstName: "",
+			firstNameError: false,
 			lastName: "",
+			lastNameError: false,
 			phone: "",
+			phoneError: false,
 			email: "",
+			emailError: false,
 			password: "",
-			confirmedPassword: ""
-        }  
+			passwordError: false,
+			confirmedPassword: "",
+			confirmedPasswordError: false
+        }  ;
     },
 	
 	reset: function() {
@@ -215,8 +224,9 @@ module.exports = React.createClass({displayName: 'exports',
 		this.setState({ loading: true });
 		
 		var user = _buildUser(this);
-		var blah = user.isValid(true);
-		debugger;
+		var error = user.validate();
+		if (error)
+			_setError(error);
 		
 		setTimeout(function() {
 			$("#new-user-modal").modal("hide");
@@ -224,10 +234,12 @@ module.exports = React.createClass({displayName: 'exports',
 		}, 1000);
 		
 		function _buildUser(context) {
+			var initial = context.getInitialState();
+			
 			return new User({
-				role: context.state.role,
-				company: context.state.company,
-				operatingArea: context.state.operatingArea,
+				role: context.state.role === initial.role ? undefined : context.state.role,
+				company: context.state.company === initial.company ? undefined : context.state.company,
+				operatingArea: context.state.operatingArea === initial.operatingArea ? undefined : context.state.operatingArea,
 				firstName: undefined,
 				lastName: context.state.lastName,
 				phone: context.state.phone,
@@ -235,6 +247,13 @@ module.exports = React.createClass({displayName: 'exports',
 				password: context.state.password,
 				confirmedPassword: context.state.confirmedPassword
 			});
+		}
+		
+		function _setError(error) {
+			for (var name in this.state)
+				if (name.endsWith("Error"))
+					this.state[name] = false;
+			this.state[error.key + "Error"] = true;
 		}
 	},
 	
@@ -271,21 +290,21 @@ module.exports = React.createClass({displayName: 'exports',
                     ), 
                     React.DOM.div({className: "modal-body container"}, 
 						React.DOM.div({className: "row"}, 
-							React.DOM.div({className: "col col-md-4"}, 
+							React.DOM.div({className: "col col-md-4 form-group" + (this.state.roleError ? " has-error" : ""), 'data-validation-key': "role"}, 
 								Dropdown({placeholder: this.state.role, list: this.state.roles, select: this.setDropdownData.bind(this, "role")})
 							), 
-							React.DOM.div({className: "col col-md-4"}, 
+							React.DOM.div({className: "col col-md-4 form-group"}, 
 								Dropdown({placeholder: this.state.company, list: this.state.companies, select: this.setDropdownData.bind(this, "company")})
 							), 
-							React.DOM.div({className: "col col-md-4"}, 
+							React.DOM.div({className: "col col-md-4 form-group"}, 
 								Dropdown({placeholder: this.state.operatingArea, list: this.state.operatingAreas, select: this.setDropdownData.bind(this, "operatingArea")})
 							)
 						), 
 						React.DOM.div({className: "row"}, 
-							React.DOM.div({className: "col col-md-6"}, 
+							React.DOM.div({className: "col col-md-6 form-group", 'data-validation-key': "firstName"}, 
 								React.DOM.input({type: "text", className: "form-control", value: this.state.firstName, onChange: this.setTextData.bind(this, "firstName"), placeholder: "First name..."})
 							), 
-							React.DOM.div({className: "col col-md-6"}, 
+							React.DOM.div({className: "col col-md-6 form-group"}, 
 								React.DOM.input({type: "text", className: "form-control", value: this.state.lastName, onChange: this.setTextData.bind(this, "lastName"), placeholder: "Last name..."})
 							)
 						), 
@@ -355,7 +374,17 @@ var Dispatcher = require("flux").Dispatcher;
 module.exports = new Dispatcher();
 });
 
-require.register("initialize", function(exports, require, module) {
+require.register("extensions/string", function(exports, require, module) {
+alert("dladflaf");
+
+String.prototype.endsWith = function(value) {
+	if (value.length > this.length)
+		return false;
+	return value.length <= this.length && this.substring(this.length - value.length, value.length) === value;
+}
+});
+
+;require.register("initialize", function(exports, require, module) {
 /* jshint node: true */
 "use strict";
 
@@ -376,12 +405,31 @@ $(function () {
 });
 
 require.register("models/user", function(exports, require, module) {
+var validation = require("utilities/validation");
+
 module.exports = Backbone.Model.extend({
-	validation: {
-		firstName: {
-			required: true,
-			msg: "The first name is required."
-		}
+	validate: function() {
+		var attrs = this.attributes;
+		if (!validation.required(attrs.role))
+			return { key: "role", message: "The role is required." };
+		if (!validation.required(attrs.company))
+			return { key: "company", message: "The company is required." };
+		if (!validation.required(attrs.operatingArea))
+			return { key: "operatingArea", message: "The operating area is required." };
+		if (!validation.required(attrs.firstName))
+			return { key: "firstName", message: "The first name is required." };
+		if (!validation.required(attrs.lastName))
+			return { key: "lastName", message: "The last name is required." };
+		if (!validation.phone(attrs.phone))
+			return { key: "phone", message: "The phone number is invalid." };
+		if (!validation.email(attrs.email))
+			return { key: "email", message: "The email address is invalid." };
+		if (!validation.required(attrs.password))
+			return { key: "password", message: "The password is required." };
+		if (!validation.required(attrs.confirmedPassword))
+			return { key: "confirmedPassword", message: "The confirmed password is required." };
+		if (attrs.password !== attrs.confirmedPassword)
+			return { key: ["password", "confirmedPassword"], message: "The passwords must match." };
 	}
 });
 });
@@ -476,5 +524,22 @@ store.dispatchToken = dispatcher.register(function dispatchCallback(payload) {
 module.exports = store;
 });
 
+require.register("utilities/validation", function(exports, require, module) {
+module.exports = {
+	required: function(value) {
+		return value !== undefined && value !== "";
+	},
+	
+	phone: function(value) {
+		value = value.replace(/[\D]/g, "");
+		return value.length !== 10;
+	},
+	
+	email: function(value) {
+		return new RegExp(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/).test(value);
+	}
+}
+});
 
+;
 //# sourceMappingURL=app.js.map
