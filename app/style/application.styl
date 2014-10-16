@@ -1,0 +1,24 @@
+@import "nib"
+
+// Variables
+
+secondary-font-colour = #F28E41
+
+header-height = 50px
+
+spacing = 15px
+
+
+// Mixins
+
+vertical-centre(height)
+	height height
+	line-height height !important
+	display inline-block
+	vertical-align middle
+
+
+// Global
+
+h1, h2, h3, h4 { padding:0; margin:0; }
+body>div.content { position:relative; top:header-height+spacing; padding:spacing 0; }

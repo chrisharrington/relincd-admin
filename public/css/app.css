@@ -8330,13 +8330,22 @@ body>div.content {
   top: 65px;
   padding: 15px 0;
 }
+
+div.dropdown {
+  width: 100%;
+}
+div.dropdown >button,
+div.dropdown >ul {
+  width: 100%;
+}
+
 header .logo {
-  color: #f28e41 !important;
+  color: secondary-font-colour !important;
   font-weight: bold;
   text-transform: uppercase;
 }
 header .logo:hover {
-  color: #f28e41 !important;
+  color: secondary-font-colour !important;
 }
 header .account-info {
   float: right;
@@ -8351,20 +8360,15 @@ header .account-info >a {
   float: right;
   cursor: pointer;
 }
+
 .management-container >h1 {
   float: left;
 }
 .management-container >div.actions {
   float: right;
 }
-.management-container #new-user-modal .modal-body >input,
-.management-container #new-user-modal .modal-body >select {
+.management-container #new-user-modal .modal-body.container {
   width: 100%;
-  margin-top: 15px;
-}
-.management-container #new-user-modal .modal-body >input:first-child,
-.management-container #new-user-modal .modal-body >select:first-child {
-  margin-top: 0;
 }
 
 

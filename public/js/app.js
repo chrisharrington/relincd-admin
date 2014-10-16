@@ -190,7 +190,11 @@ module.exports = React.createClass({displayName: 'exports',
     getInitialState: function() {
         return {
             role: "Role...",
-            roles: []
+            roles: [],
+			company: "Company...",
+			companies: [],
+			operatingArea: "Operating Area...",
+			operatingAreas: []
         }  
     },
 	
@@ -202,7 +206,9 @@ module.exports = React.createClass({displayName: 'exports',
 	
     componentWillMount: function() {
         this.setState({
-            roles: [{ name: "Supervisor" }, { name: "Operator" }, { name: "Company Admin" }, { name: "Relincd" }]
+            roles: [{ name: "Supervisor" }, { name: "Operator" }, { name: "Company Admin" }, { name: "Relincd" }],
+			companies: [{ name: "Test Company 1" }, { name: "Test Company 2" }, { name: "Test Company 3" }],
+			operatingAreas: [{ name: "Operating Area 1" }, { name: "Operating Area 2" }, { name: "Operating Area 3" }]
         });  
     },
     
@@ -217,8 +223,18 @@ module.exports = React.createClass({displayName: 'exports',
                         ), 
                         React.DOM.h4({className: "modal-title", id: "myModalLabel"}, "New User")
                     ), 
-                    React.DOM.div({className: "modal-body"}, 
-                        Dropdown({placeholder:  this.state.role, list:  this.state.roles, select:  this.setDropdownData.bind(this, "role") })
+                    React.DOM.div({className: "modal-body container"}, 
+						React.DOM.div({className: "row"}, 
+							React.DOM.div({className: "col-md-4"}, 
+								Dropdown({placeholder: this.state.role, list: this.state.roles, select: this.setDropdownData.bind(this, "role")})
+							), 
+							React.DOM.div({className: "col-md-4"}, 
+								Dropdown({placeholder: this.state.company, list: this.state.companies, select: this.setDropdownData.bind(this, "company")})
+							), 
+							React.DOM.div({className: "col-md-4"}, 
+								Dropdown({placeholder: this.state.operatingArea, list: this.state.operatingAreas, select: this.setDropdownData.bind(this, "operatingArea")})
+							)
+						)
                     ), 
                     React.DOM.div({className: "modal-footer"}, 
                         React.DOM.button({type: "button", className: "btn btn-default", 'data-dismiss': "modal"}, "Close"), 

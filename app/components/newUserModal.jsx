@@ -8,7 +8,11 @@ module.exports = React.createClass({
     getInitialState: function() {
         return {
             role: "Role...",
-            roles: []
+            roles: [],
+			company: "Company...",
+			companies: [],
+			operatingArea: "Operating Area...",
+			operatingAreas: []
         }  
     },
 	
@@ -20,7 +24,9 @@ module.exports = React.createClass({
 	
     componentWillMount: function() {
         this.setState({
-            roles: [{ name: "Supervisor" }, { name: "Operator" }, { name: "Company Admin" }, { name: "Relincd" }]
+            roles: [{ name: "Supervisor" }, { name: "Operator" }, { name: "Company Admin" }, { name: "Relincd" }],
+			companies: [{ name: "Test Company 1" }, { name: "Test Company 2" }, { name: "Test Company 3" }],
+			operatingAreas: [{ name: "Operating Area 1" }, { name: "Operating Area 2" }, { name: "Operating Area 3" }]
         });  
     },
     
@@ -35,8 +41,18 @@ module.exports = React.createClass({
                         </button>
                         <h4 className="modal-title" id="myModalLabel">New User</h4>
                     </div>
-                    <div className="modal-body">
-                        <Dropdown placeholder={ this.state.role } list={ this.state.roles } select={ this.setDropdownData.bind(this, "role") } />
+                    <div className="modal-body container">
+						<div className="row">
+							<div className="col-md-4">
+								<Dropdown placeholder={this.state.role} list={this.state.roles} select={this.setDropdownData.bind(this, "role")} />
+							</div>
+							<div className="col-md-4">
+								<Dropdown placeholder={this.state.company} list={this.state.companies} select={this.setDropdownData.bind(this, "company")} />
+							</div>
+							<div className="col-md-4">
+								<Dropdown placeholder={this.state.operatingArea} list={this.state.operatingAreas} select={this.setDropdownData.bind(this, "operatingArea")} />
+							</div>
+						</div>
                     </div>
                     <div className="modal-footer">
                         <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
