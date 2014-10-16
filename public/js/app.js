@@ -107,6 +107,30 @@ app.on("start", function () {
 module.exports = app;
 });
 
+require.register("components/dropdown", function(exports, require, module) {
+/** @jsx React.DOM */
+/* jshint node: true */
+"use strict";
+
+var React = require("react");
+
+module.exports = React.createClass({displayName: 'exports',
+	render: function () {
+        return React.DOM.div({className: "dropdown"}, 
+            React.DOM.button({className: "btn btn-default dropdown-toggle", type: "button", id: "dropdownMenu1", 'data-toggle': "dropdown"}, 
+                 this.props.placeholder, 
+                React.DOM.span({className: "caret"})
+            ), 
+            React.DOM.ul({className: "dropdown-menu", role: "menu", 'aria-labelledby': "dropdownMenu1"}, 
+                this.props.list.map(function(object) {
+                    return React.DOM.li({role: "presentation", onClick: this.props.select.bind(this, object)}, React.DOM.a({role: "menuitem", tabindex: "-1"}, object.name))
+                })
+            )
+        )
+    }
+});
+});
+
 require.register("components/header", function(exports, require, module) {
 /** @jsx React.DOM */
 /* jshint node: true */
@@ -157,24 +181,48 @@ require.register("components/newUserModal", function(exports, require, module) {
 /* jshint node: true */
 "use strict";
 
-var React = require("react");
+var React = require("react"),
+    Dropdown = require("components/dropdown");
 
 module.exports = React.createClass({displayName: 'exports',
+    getInitialState: function() {
+        return {
+            role: "",
+            roles: []
+        }  
+    },
+    
+    setRole: function(role) {
+        debugger;
+        this.props.role = role;  
+    },
+    
+    componentWillMount: function() {
+        this.setState({
+            roles: [{ id: 1, name: "Supervisor" }, { name: "Operator" }, { name: "Company Admin" }, { name: "Relincd" }]
+        });  
+    },
+    
 	render: function () {
-        return React.DOM.div({className: "custom-modal new-user-modal"}, 
-            React.DOM.div({className: "content"}, 
-                React.DOM.h2(null, "New User"), 
-                React.DOM.select(null, 
-                    React.DOM.option(null, "Role...")
-                ), 
-                React.DOM.select(null, 
-                    React.DOM.option(null, "Company...")
-                ), 
-                React.DOM.select(null, 
-                    React.DOM.option(null, "Operating Area...")
+        return React.DOM.div({className: "modal fade", id: "new-user-modal", tabindex: "-1", role: "dialog", 'aria-hidden': "true"}, 
+          React.DOM.div({className: "modal-dialog"}, 
+                React.DOM.div({className: "modal-content"}, 
+                    React.DOM.div({className: "modal-header"}, 
+                        React.DOM.button({type: "button", className: "close", 'data-dismiss': "modal"}, 
+                            React.DOM.span({'aria-hidden': "true"}, "×"), 
+                            React.DOM.span({className: "sr-only"}, "Close")
+                        ), 
+                        React.DOM.h4({className: "modal-title", id: "myModalLabel"}, "New User")
+                    ), 
+                    React.DOM.div({className: "modal-body"}, 
+                        Dropdown({placeholder: "Role...", list:  this.state.roles, select:  this.setRole})
+                    ), 
+                    React.DOM.div({className: "modal-footer"}, 
+                        React.DOM.button({type: "button", className: "btn btn-default", 'data-dismiss': "modal"}, "Close"), 
+                        React.DOM.button({type: "button", className: "btn btn-primary"}, "Create User")
+                    )
                 )
-            ), 
-            React.DOM.div({className: "overlay"})
+            )
         );
     }
 });
@@ -243,7 +291,7 @@ module.exports = React.createClass({displayName: 'exports',
         return React.DOM.div({className: "container management-container"}, 
             React.DOM.h1(null, "Management"), 
 			React.DOM.div({className: "actions"}, 
-                React.DOM.button({type: "button", className: "btn btn-primary"}, "New User")
+                React.DOM.button({type: "button", className: "btn btn-primary", 'data-toggle': "modal", 'data-target': "#new-user-modal"}, "New User")
             ), 
             NewUserModal(null)
         );

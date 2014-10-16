@@ -8351,41 +8351,20 @@ header .account-info >a {
   float: right;
   cursor: pointer;
 }
-.custom-modal .overlay {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 2;
-  background: rgba(0,0,0,0.6);
-}
-.custom-modal .content {
-  position: absolute;
-  width: 800px;
-  padding: 15px;
-  background: #fff;
-  left: 0;
-  right: 0;
-  margin: auto;
-  z-index: 3;
-  -webkit-border-radius: 3px;
-  border-radius: 3px;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-}
 .management-container >h1 {
   float: left;
 }
 .management-container >div.actions {
   float: right;
 }
-.management-container .new-user-modal .content >input,
-.management-container .new-user-modal .content >select {
-  float: left;
+.management-container #new-user-modal .modal-body >input,
+.management-container #new-user-modal .modal-body >select {
   width: 100%;
   margin-top: 15px;
+}
+.management-container #new-user-modal .modal-body >input:first-child,
+.management-container #new-user-modal .modal-body >select:first-child {
+  margin-top: 0;
 }
 
 
