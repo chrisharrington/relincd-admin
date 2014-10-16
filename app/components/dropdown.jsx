@@ -12,7 +12,7 @@ module.exports = React.createClass({
         return <div className="dropdown">
             <button className="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
                 { this.props.placeholder }
-                <span className="caret"></span>
+                <i className="fa fa-caret-down"></i>
             </button>
             <ul className="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
 				{items}

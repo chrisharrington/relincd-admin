@@ -123,7 +123,7 @@ module.exports = React.createClass({displayName: 'exports',
         return React.DOM.div({className: "dropdown"}, 
             React.DOM.button({className: "btn btn-default dropdown-toggle", type: "button", id: "dropdownMenu1", 'data-toggle': "dropdown"}, 
                  this.props.placeholder, 
-                React.DOM.span({className: "caret"})
+                React.DOM.i({className: "fa fa-caret-down"})
             ), 
             React.DOM.ul({className: "dropdown-menu", role: "menu", 'aria-labelledby': "dropdownMenu1"}, 
 				items
@@ -189,18 +189,44 @@ var React = require("react"),
 module.exports = React.createClass({displayName: 'exports',
     getInitialState: function() {
         return {
+			loading: false,
             role: "Role...",
             roles: [],
 			company: "Company...",
 			companies: [],
 			operatingArea: "Operating Area...",
-			operatingAreas: []
+			operatingAreas: [],
+			firstName: "",
+			lastName: "",
+			phone: "",
+			email: "",
+			password: "",
+			confirmedPassword: ""
         }  
     },
+	
+	reset: function() {
+		this.setState(this.getInitialState());	
+	},
+	
+	save: function() {
+		var me = this;
+		this.setState({ loading: true });
+		setTimeout(function() {
+			$("#new-user-modal").modal("hide");
+			me.reset();
+		}, 1000);
+	},
 	
 	setDropdownData: function(key, value) {
 		var object = {};
 		object[key] = value;
+		this.setState(object);
+	},
+	
+	setTextData: function(key, event) {
+		var object = {};
+		object[key] = event.target.value;
 		this.setState(object);
 	},
 	
@@ -225,20 +251,44 @@ module.exports = React.createClass({displayName: 'exports',
                     ), 
                     React.DOM.div({className: "modal-body container"}, 
 						React.DOM.div({className: "row"}, 
-							React.DOM.div({className: "col-md-4"}, 
+							React.DOM.div({className: "col col-md-4"}, 
 								Dropdown({placeholder: this.state.role, list: this.state.roles, select: this.setDropdownData.bind(this, "role")})
 							), 
-							React.DOM.div({className: "col-md-4"}, 
+							React.DOM.div({className: "col col-md-4"}, 
 								Dropdown({placeholder: this.state.company, list: this.state.companies, select: this.setDropdownData.bind(this, "company")})
 							), 
-							React.DOM.div({className: "col-md-4"}, 
+							React.DOM.div({className: "col col-md-4"}, 
 								Dropdown({placeholder: this.state.operatingArea, list: this.state.operatingAreas, select: this.setDropdownData.bind(this, "operatingArea")})
+							)
+						), 
+						React.DOM.div({className: "row"}, 
+							React.DOM.div({className: "col col-md-6"}, 
+								React.DOM.input({type: "text", className: "form-control", value: this.state.firstName, onChange: this.setTextData.bind(this, "firstName"), placeholder: "First name..."})
+							), 
+							React.DOM.div({className: "col col-md-6"}, 
+								React.DOM.input({type: "text", className: "form-control", value: this.state.lastName, onChange: this.setTextData.bind(this, "lastName"), placeholder: "Last name..."})
+							)
+						), 
+						React.DOM.div({className: "row"}, 
+							React.DOM.div({className: "col col-md-6"}, 
+								React.DOM.input({type: "text", className: "form-control", value: this.state.phone, onChange: this.setTextData.bind(this, "phone"), placeholder: "Phone number..."})
+							), 
+							React.DOM.div({className: "col col-md-6"}, 
+								React.DOM.input({type: "text", className: "form-control", value: this.state.email, onChange: this.setTextData.bind(this, "email"), placeholder: "Email address..."})
+							)
+						), 
+						React.DOM.div({className: "row"}, 
+							React.DOM.div({className: "col col-md-6"}, 
+								React.DOM.input({type: "password", className: "form-control", value: this.state.password, onChange: this.setTextData.bind(this, "password"), placeholder: "Password..."})
+							), 
+							React.DOM.div({className: "col col-md-6"}, 
+								React.DOM.input({type: "password", className: "form-control", value: this.state.confirmedPassword, onChange: this.setTextData.bind(this, "confirmedPassword"), placeholder: "Confirm password..."})
 							)
 						)
                     ), 
                     React.DOM.div({className: "modal-footer"}, 
-                        React.DOM.button({type: "button", className: "btn btn-default", 'data-dismiss': "modal"}, "Close"), 
-                        React.DOM.button({type: "button", className: "btn btn-primary"}, "Save")
+                        React.DOM.button({type: "button", className: "btn btn-default", disabled: this.state.loading, 'data-dismiss': "modal", onClick: this.reset}, "Close"), 
+                        React.DOM.button({type: "button", className: "btn btn-primary", disabled: this.state.loading, onClick: this.save}, "Save")
                     )
                 )
             )
@@ -276,6 +326,15 @@ var Dispatcher = require("flux").Dispatcher;
 module.exports = new Dispatcher();
 });
 
+require.register("dispatchers/user", function(exports, require, module) {
+/* jshint node: true */
+"use strict";
+
+var Dispatcher = require("flux").Dispatcher;
+
+module.exports = new Dispatcher();
+});
+
 require.register("initialize", function(exports, require, module) {
 /* jshint node: true */
 "use strict";
@@ -288,13 +347,17 @@ var app = require("application"),
 $(function () {
     app.addInitializer(function initializeRouter() {
         new Router({controller: new Controller({container: $("#app")[0]})});
-
 		React.renderComponent(new Header(), $("header")[0]);
     });
 
     app.start();
 });
 
+});
+
+require.register("models/user", function(exports, require, module) {
+module.exports = Backbone.Model.extend({
+});
 });
 
 require.register("pages/management", function(exports, require, module) {
@@ -341,6 +404,32 @@ require.register("stores/city", function(exports, require, module) {
 
 var Backbone = require("backbone"),
     dispatcher = require("../dispatchers/city");
+
+var Model = Backbone.Model.extend({});
+
+var Store = Backbone.Collection.extend({
+    url: "/api/geodata/city_county_links_for_state_of/CA.json",
+    model: Model
+});
+
+var store = new Store();
+
+store.dispatchToken = dispatcher.register(function dispatchCallback(payload) {
+    switch (payload.actionType) {
+        case "fetch":
+            store.fetch();
+    }
+});
+
+module.exports = store;
+});
+
+require.register("stores/user", function(exports, require, module) {
+/* jshint node: true */
+"use strict";
+
+var Backbone = require("backbone"),
+    dispatcher = require("../dispatchers/user");
 
 var Model = Backbone.Model.extend({});
 

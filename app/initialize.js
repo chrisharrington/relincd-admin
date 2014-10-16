@@ -9,7 +9,6 @@ var app = require("application"),
 $(function () {
     app.addInitializer(function initializeRouter() {
         new Router({controller: new Controller({container: $("#app")[0]})});
-
 		React.renderComponent(new Header(), $("header")[0]);
     });
 

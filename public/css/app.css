@@ -8331,12 +8331,34 @@ body>div.content {
   padding: 15px 0;
 }
 
+h1,
+h2,
+h3,
+h4 {
+  padding: 0;
+  margin: 0;
+}
+body>div.content {
+  position: relative;
+  top: 65px;
+  padding: 15px 0;
+}
 div.dropdown {
   width: 100%;
 }
 div.dropdown >button,
 div.dropdown >ul {
   width: 100%;
+}
+div.dropdown >button >span {
+  float: left;
+}
+div.dropdown >button >i {
+  float: right;
+  height: 20px;
+  line-height: 20px !important;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 header .logo {
@@ -8361,6 +8383,18 @@ header .account-info >a {
   cursor: pointer;
 }
 
+h1,
+h2,
+h3,
+h4 {
+  padding: 0;
+  margin: 0;
+}
+body>div.content {
+  position: relative;
+  top: 65px;
+  padding: 15px 0;
+}
 .management-container >h1 {
   float: left;
 }
@@ -8369,6 +8403,9 @@ header .account-info >a {
 }
 .management-container #new-user-modal .modal-body.container {
   width: 100%;
+}
+.management-container #new-user-modal .modal-body.container .row>.col {
+  margin-bottom: 15px;
 }
 
 

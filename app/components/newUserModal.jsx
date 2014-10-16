@@ -7,18 +7,44 @@ var React = require("react"),
 module.exports = React.createClass({
     getInitialState: function() {
         return {
+			loading: false,
             role: "Role...",
             roles: [],
 			company: "Company...",
 			companies: [],
 			operatingArea: "Operating Area...",
-			operatingAreas: []
+			operatingAreas: [],
+			firstName: "",
+			lastName: "",
+			phone: "",
+			email: "",
+			password: "",
+			confirmedPassword: ""
         }  
     },
+	
+	reset: function() {
+		this.setState(this.getInitialState());	
+	},
+	
+	save: function() {
+		var me = this;
+		this.setState({ loading: true });
+		setTimeout(function() {
+			$("#new-user-modal").modal("hide");
+			me.reset();
+		}, 1000);
+	},
 	
 	setDropdownData: function(key, value) {
 		var object = {};
 		object[key] = value;
+		this.setState(object);
+	},
+	
+	setTextData: function(key, event) {
+		var object = {};
+		object[key] = event.target.value;
 		this.setState(object);
 	},
 	
@@ -43,20 +69,44 @@ module.exports = React.createClass({
                     </div>
                     <div className="modal-body container">
 						<div className="row">
-							<div className="col-md-4">
+							<div className="col col-md-4">
 								<Dropdown placeholder={this.state.role} list={this.state.roles} select={this.setDropdownData.bind(this, "role")} />
 							</div>
-							<div className="col-md-4">
+							<div className="col col-md-4">
 								<Dropdown placeholder={this.state.company} list={this.state.companies} select={this.setDropdownData.bind(this, "company")} />
 							</div>
-							<div className="col-md-4">
+							<div className="col col-md-4">
 								<Dropdown placeholder={this.state.operatingArea} list={this.state.operatingAreas} select={this.setDropdownData.bind(this, "operatingArea")} />
+							</div>
+						</div>
+						<div className="row">
+							<div className="col col-md-6">
+								<input type="text" className="form-control" value={this.state.firstName} onChange={this.setTextData.bind(this, "firstName")} placeholder="First name..." />
+							</div>
+							<div className="col col-md-6">
+								<input type="text" className="form-control" value={this.state.lastName} onChange={this.setTextData.bind(this, "lastName")} placeholder="Last name..." />
+							</div>
+						</div>
+						<div className="row">
+							<div className="col col-md-6">
+								<input type="text" className="form-control" value={this.state.phone} onChange={this.setTextData.bind(this, "phone")} placeholder="Phone number..." />
+							</div>
+							<div className="col col-md-6">
+								<input type="text" className="form-control" value={this.state.email} onChange={this.setTextData.bind(this, "email")} placeholder="Email address..." />
+							</div>
+						</div>
+						<div className="row">
+							<div className="col col-md-6">
+								<input type="password" className="form-control" value={this.state.password} onChange={this.setTextData.bind(this, "password")} placeholder="Password..." />
+							</div>
+							<div className="col col-md-6">
+								<input type="password" className="form-control" value={this.state.confirmedPassword} onChange={this.setTextData.bind(this, "confirmedPassword")} placeholder="Confirm password..." />
 							</div>
 						</div>
                     </div>
                     <div className="modal-footer">
-                        <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" className="btn btn-primary">Save</button>
+                        <button type="button" className="btn btn-default" disabled={this.state.loading} data-dismiss="modal" onClick={this.reset}>Close</button>
+                        <button type="button" className="btn btn-primary" disabled={this.state.loading} onClick={this.save}>Save</button>
                     </div>
                 </div>
             </div>
