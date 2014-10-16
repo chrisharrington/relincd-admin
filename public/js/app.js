@@ -116,15 +116,17 @@ var React = require("react");
 
 module.exports = React.createClass({displayName: 'exports',
 	render: function () {
+		var items = [];
+		for (var i = 0; i < this.props.list.length; i++)
+			items.push(React.DOM.li({role: "presentation", onClick:  this.props.select.bind(this, this.props.list[i].name) }, React.DOM.a({role: "menuitem", tabindex: "-1"}, this.props.list[i].name)));
+		
         return React.DOM.div({className: "dropdown"}, 
             React.DOM.button({className: "btn btn-default dropdown-toggle", type: "button", id: "dropdownMenu1", 'data-toggle': "dropdown"}, 
                  this.props.placeholder, 
                 React.DOM.span({className: "caret"})
             ), 
             React.DOM.ul({className: "dropdown-menu", role: "menu", 'aria-labelledby': "dropdownMenu1"}, 
-                this.props.list.map(function(object) {
-                    return React.DOM.li({role: "presentation", onClick: this.props.select.bind(this, object)}, React.DOM.a({role: "menuitem", tabindex: "-1"}, object.name))
-                })
+				items
             )
         )
     }
@@ -187,19 +189,20 @@ var React = require("react"),
 module.exports = React.createClass({displayName: 'exports',
     getInitialState: function() {
         return {
-            role: "",
+            role: "Role...",
             roles: []
         }  
     },
-    
-    setRole: function(role) {
-        debugger;
-        this.props.role = role;  
-    },
-    
+	
+	setDropdownData: function(key, value) {
+		var object = {};
+		object[key] = value;
+		this.setState(object);
+	},
+	
     componentWillMount: function() {
         this.setState({
-            roles: [{ id: 1, name: "Supervisor" }, { name: "Operator" }, { name: "Company Admin" }, { name: "Relincd" }]
+            roles: [{ name: "Supervisor" }, { name: "Operator" }, { name: "Company Admin" }, { name: "Relincd" }]
         });  
     },
     
@@ -215,11 +218,11 @@ module.exports = React.createClass({displayName: 'exports',
                         React.DOM.h4({className: "modal-title", id: "myModalLabel"}, "New User")
                     ), 
                     React.DOM.div({className: "modal-body"}, 
-                        Dropdown({placeholder: "Role...", list:  this.state.roles, select:  this.setRole})
+                        Dropdown({placeholder:  this.state.role, list:  this.state.roles, select:  this.setDropdownData.bind(this, "role") })
                     ), 
                     React.DOM.div({className: "modal-footer"}, 
                         React.DOM.button({type: "button", className: "btn btn-default", 'data-dismiss': "modal"}, "Close"), 
-                        React.DOM.button({type: "button", className: "btn btn-primary"}, "Create User")
+                        React.DOM.button({type: "button", className: "btn btn-primary"}, "Save")
                     )
                 )
             )
@@ -287,13 +290,17 @@ var React = require("react"),
     NewUserModal = require("components/newUserModal");
 
 module.exports = React.createClass({displayName: 'exports',
+	addUser: function() {
+		
+	},
+	
     render: function(){
         return React.DOM.div({className: "container management-container"}, 
             React.DOM.h1(null, "Management"), 
 			React.DOM.div({className: "actions"}, 
                 React.DOM.button({type: "button", className: "btn btn-primary", 'data-toggle': "modal", 'data-target': "#new-user-modal"}, "New User")
             ), 
-            NewUserModal(null)
+            NewUserModal({onSave:  this.addUser})
         );
     }
 });

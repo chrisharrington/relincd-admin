@@ -7,19 +7,20 @@ var React = require("react"),
 module.exports = React.createClass({
     getInitialState: function() {
         return {
-            role: "",
+            role: "Role...",
             roles: []
         }  
     },
-    
-    setRole: function(role) {
-        debugger;
-        this.props.role = role;  
-    },
-    
+	
+	setDropdownData: function(key, value) {
+		var object = {};
+		object[key] = value;
+		this.setState(object);
+	},
+	
     componentWillMount: function() {
         this.setState({
-            roles: [{ id: 1, name: "Supervisor" }, { name: "Operator" }, { name: "Company Admin" }, { name: "Relincd" }]
+            roles: [{ name: "Supervisor" }, { name: "Operator" }, { name: "Company Admin" }, { name: "Relincd" }]
         });  
     },
     
@@ -35,11 +36,11 @@ module.exports = React.createClass({
                         <h4 className="modal-title" id="myModalLabel">New User</h4>
                     </div>
                     <div className="modal-body">
-                        <Dropdown placeholder="Role..." list={ this.state.roles } select={ this.setRole } />
+                        <Dropdown placeholder={ this.state.role } list={ this.state.roles } select={ this.setDropdownData.bind(this, "role") } />
                     </div>
                     <div className="modal-footer">
                         <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" className="btn btn-primary">Create User</button>
+                        <button type="button" className="btn btn-primary">Save</button>
                     </div>
                 </div>
             </div>
