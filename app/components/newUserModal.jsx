@@ -2,7 +2,8 @@
 "use strict";
 
 var React = require("react"),
-    Dropdown = require("components/dropdown");
+    Dropdown = require("components/dropdown"),
+	User = require("models/user");
 
 module.exports = React.createClass({
     getInitialState: function() {
@@ -30,10 +31,29 @@ module.exports = React.createClass({
 	save: function() {
 		var me = this;
 		this.setState({ loading: true });
+		
+		var user = _buildUser(this);
+		var blah = user.isValid(true);
+		debugger;
+		
 		setTimeout(function() {
 			$("#new-user-modal").modal("hide");
 			me.reset();
 		}, 1000);
+		
+		function _buildUser(context) {
+			return new User({
+				role: context.state.role,
+				company: context.state.company,
+				operatingArea: context.state.operatingArea,
+				firstName: undefined,
+				lastName: context.state.lastName,
+				phone: context.state.phone,
+				email: context.state.email,
+				password: context.state.password,
+				confirmedPassword: context.state.confirmedPassword
+			});
+		}
 	},
 	
 	setDropdownData: function(key, value) {
