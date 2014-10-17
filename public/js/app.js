@@ -120,7 +120,7 @@ module.exports = React.createClass({displayName: 'exports',
 		for (var i = 0; i < this.props.list.length; i++)
 			items.push(React.DOM.li({role: "presentation", onClick:  this.props.select.bind(this, this.props.list[i].name) }, React.DOM.a({role: "menuitem", tabindex: "-1"}, this.props.list[i].name)));
 		
-        return React.DOM.div({className: "dropdown"}, 
+        return React.DOM.div({className: "dropdown" + (this.props.error ? " error" : "")}, 
             React.DOM.button({className: "btn btn-default dropdown-toggle", type: "button", id: "dropdownMenu1", 'data-toggle': "dropdown"}, 
                  this.props.placeholder, 
                 React.DOM.i({className: "fa fa-caret-down"})
@@ -190,15 +190,16 @@ var React = require("react"),
 module.exports = React.createClass({displayName: 'exports',
     getInitialState: function() {
         return {
+            roles: [{ name: "Supervisor" }, { name: "Operator" }, { name: "Company Admin" }, { name: "Relincd" }],
+			companies: [{ name: "Test Company 1" }, { name: "Test Company 2" }, { name: "Test Company 3" }],
+			operatingAreas: [{ name: "Operating Area 1" }, { name: "Operating Area 2" }, { name: "Operating Area 3" }],
+            errorMessage: "",
 			loading: false,
             role: "Role...",
-            roles: [],
 			roleError: false,
 			company: "Company...",
-			companies: [],
 			companyError: false,
 			operatingArea: "Operating Area...",
-			operatingAreas: [],
 			operatingAreaError: false,
 			firstName: "",
 			firstNameError: false,
@@ -212,7 +213,7 @@ module.exports = React.createClass({displayName: 'exports',
 			passwordError: false,
 			confirmedPassword: "",
 			confirmedPasswordError: false
-        }  ;
+        };
     },
 	
 	reset: function() {
@@ -221,9 +222,9 @@ module.exports = React.createClass({displayName: 'exports',
 	
 	save: function() {
 		var user = _buildUser(this);
-		var error = user.validate();
-		if (error)
-			_setError(error, this);
+		var errors = user.validate();
+		if (errors)
+			_setErrors(errors, this);
 		else {
             var me = this;
             this.setState({ loading: true });
@@ -250,13 +251,22 @@ module.exports = React.createClass({displayName: 'exports',
 			});
 		}
 		
-		function _setError(error, context) {
-            debugger;
+		function _setErrors(errors, context) {
+            var newState = {}, keyed = _getErrorKeys(errors);
 			for (var name in context.state)
 				if (name.endsWith("Error"))
-					context.state[name] = false;
-			context.state[error.key + "Error"] = true;
+					newState[name] = false;
+			newState[error.key + "Error"] = true;
+            newState.errorMessage = error.message;
+            context.setState(newState);
 		}
+        
+        function _getErrorKeys(errors) {
+            var keys = {};
+            for (var i = 0; i < errors.length; i++)
+                keys[errors[i].key] = errors[i].message;
+            return keys;
+        }
 	},
 	
 	setDropdownData: function(key, value) {
@@ -271,14 +281,6 @@ module.exports = React.createClass({displayName: 'exports',
 		this.setState(object);
 	},
 	
-    componentWillMount: function() {
-        this.setState({
-            roles: [{ name: "Supervisor" }, { name: "Operator" }, { name: "Company Admin" }, { name: "Relincd" }],
-			companies: [{ name: "Test Company 1" }, { name: "Test Company 2" }, { name: "Test Company 3" }],
-			operatingAreas: [{ name: "Operating Area 1" }, { name: "Operating Area 2" }, { name: "Operating Area 3" }]
-        });  
-    },
-    
 	render: function () {
         return React.DOM.div({className: "modal fade", id: "new-user-modal", tabindex: "-1", role: "dialog", 'aria-hidden': "true"}, 
           React.DOM.div({className: "modal-dialog"}, 
@@ -292,14 +294,14 @@ module.exports = React.createClass({displayName: 'exports',
                     ), 
                     React.DOM.div({className: "modal-body container"}, 
 						React.DOM.div({className: "row"}, 
-							React.DOM.div({className: "col col-md-4 form-group" + (this.state.roleError ? " has-error" : ""), 'data-validation-key': "role"}, 
-								Dropdown({placeholder: this.state.role, list: this.state.roles, select: this.setDropdownData.bind(this, "role")})
+							React.DOM.div({className: "col col-md-4", 'data-validation-key': "role"}, 
+								Dropdown({error: this.state.roleError, placeholder: this.state.role, list: this.state.roles, select: this.setDropdownData.bind(this, "role")})
 							), 
 							React.DOM.div({className: "col col-md-4 form-group"}, 
-								Dropdown({placeholder: this.state.company, list: this.state.companies, select: this.setDropdownData.bind(this, "company")})
+								Dropdown({error: this.state.companyError, placeholder: this.state.company, list: this.state.companies, select: this.setDropdownData.bind(this, "company")})
 							), 
 							React.DOM.div({className: "col col-md-4 form-group"}, 
-								Dropdown({placeholder: this.state.operatingArea, list: this.state.operatingAreas, select: this.setDropdownData.bind(this, "operatingArea")})
+								Dropdown({error: this.state.operatingAreaError, placeholder: this.state.operatingArea, list: this.state.operatingAreas, select: this.setDropdownData.bind(this, "operatingArea")})
 							)
 						), 
 						React.DOM.div({className: "row"}, 
@@ -328,6 +330,7 @@ module.exports = React.createClass({displayName: 'exports',
 						)
                     ), 
                     React.DOM.div({className: "modal-footer"}, 
+                        React.DOM.span({className: "error-message"}, this.state.errorMessage), 
                         React.DOM.button({type: "button", className: "btn btn-default", disabled: this.state.loading, 'data-dismiss': "modal", onClick: this.reset}, "Close"), 
                         React.DOM.button({type: "button", className: "btn btn-primary", disabled: this.state.loading, onClick: this.save}, "Save")
                     )
@@ -376,11 +379,17 @@ var Dispatcher = require("flux").Dispatcher;
 module.exports = new Dispatcher();
 });
 
+require.register("extensions/object", function(exports, require, module) {
+Array.prototype.dict = function(prop) {
+      
+};
+});
+
 require.register("extensions/string", function(exports, require, module) {
 String.prototype.endsWith = function(value) {
 	if (value.length > this.length)
 		return false;
-	return value.length <= this.length && this.substring(this.length - value.length, value.length) === value;
+	return value.length <= this.length && this.substr(this.length - value.length, value.length) === value;
 }
 });
 
@@ -410,27 +419,28 @@ var validation = require("utilities/validation");
 
 module.exports = Backbone.Model.extend({
 	validate: function() {
-		var attrs = this.attributes;
+		var attrs = this.attributes, errors = {};
 		if (!validation.required(attrs.role))
-			return { key: "role", message: "The role is required." };
+			errors.push({ key: "role", message: "The role is required." });
 		if (!validation.required(attrs.company))
-			return { key: "company", message: "The company is required." };
+			errors.push({ key: "company", message: "The company is required." });
 		if (!validation.required(attrs.operatingArea))
-			return { key: "operatingArea", message: "The operating area is required." };
+			errors.push({ key: "operatingArea", message: "The operating area is required." });
 		if (!validation.required(attrs.firstName))
-			return { key: "firstName", message: "The first name is required." };
+			errors.push({ key: "firstName", message: "The first name is required." });
 		if (!validation.required(attrs.lastName))
-			return { key: "lastName", message: "The last name is required." };
+			errors.push({ key: "lastName", message: "The last name is required." });
 		if (!validation.phone(attrs.phone))
-			return { key: "phone", message: "The phone number is invalid." };
+			errors.push({ key: "phone", message: "The phone number is invalid." });
 		if (!validation.email(attrs.email))
-			return { key: "email", message: "The email address is invalid." };
+			errors.push({ key: "email", message: "The email address is invalid." });
 		if (!validation.required(attrs.password))
-			return { key: "password", message: "The password is required." };
+			errors.push({ key: "password", message: "The password is required." });
 		if (!validation.required(attrs.confirmedPassword))
-			return { key: "confirmedPassword", message: "The confirmed password is required." };
+			errors.push({ key: "confirmedPassword", message: "The confirmed password is required." });
 		if (attrs.password !== attrs.confirmedPassword)
-			return { key: ["password", "confirmedPassword"], message: "The passwords must match." };
+			errors.push({ key: ["password", "confirmedPassword"], message: "The passwords must match." });
+        return errors.length === 0 ? undefined : errors;
 	}
 });
 });

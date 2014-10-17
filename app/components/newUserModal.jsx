@@ -8,15 +8,16 @@ var React = require("react"),
 module.exports = React.createClass({
     getInitialState: function() {
         return {
+            roles: [{ name: "Supervisor" }, { name: "Operator" }, { name: "Company Admin" }, { name: "Relincd" }],
+			companies: [{ name: "Test Company 1" }, { name: "Test Company 2" }, { name: "Test Company 3" }],
+			operatingAreas: [{ name: "Operating Area 1" }, { name: "Operating Area 2" }, { name: "Operating Area 3" }],
+            errorMessage: "",
 			loading: false,
             role: "Role...",
-            roles: [],
 			roleError: false,
 			company: "Company...",
-			companies: [],
 			companyError: false,
 			operatingArea: "Operating Area...",
-			operatingAreas: [],
 			operatingAreaError: false,
 			firstName: "",
 			firstNameError: false,
@@ -30,7 +31,7 @@ module.exports = React.createClass({
 			passwordError: false,
 			confirmedPassword: "",
 			confirmedPasswordError: false
-        }  ;
+        };
     },
 	
 	reset: function() {
@@ -39,9 +40,9 @@ module.exports = React.createClass({
 	
 	save: function() {
 		var user = _buildUser(this);
-		var error = user.validate();
-		if (error)
-			_setError(error, this);
+		var errors = user.validate();
+		if (errors)
+			_setErrors(errors, this);
 		else {
             var me = this;
             this.setState({ loading: true });
@@ -68,13 +69,22 @@ module.exports = React.createClass({
 			});
 		}
 		
-		function _setError(error, context) {
-            debugger;
+		function _setErrors(errors, context) {
+            var newState = {}, keyed = _getErrorKeys(errors);
 			for (var name in context.state)
 				if (name.endsWith("Error"))
-					context.state[name] = false;
-			context.state[error.key + "Error"] = true;
+					newState[name] = false;
+			newState[error.key + "Error"] = true;
+            newState.errorMessage = error.message;
+            context.setState(newState);
 		}
+        
+        function _getErrorKeys(errors) {
+            var keys = {};
+            for (var i = 0; i < errors.length; i++)
+                keys[errors[i].key] = errors[i].message;
+            return keys;
+        }
 	},
 	
 	setDropdownData: function(key, value) {
@@ -89,14 +99,6 @@ module.exports = React.createClass({
 		this.setState(object);
 	},
 	
-    componentWillMount: function() {
-        this.setState({
-            roles: [{ name: "Supervisor" }, { name: "Operator" }, { name: "Company Admin" }, { name: "Relincd" }],
-			companies: [{ name: "Test Company 1" }, { name: "Test Company 2" }, { name: "Test Company 3" }],
-			operatingAreas: [{ name: "Operating Area 1" }, { name: "Operating Area 2" }, { name: "Operating Area 3" }]
-        });  
-    },
-    
 	render: function () {
         return <div className="modal fade" id="new-user-modal" tabindex="-1" role="dialog"aria-hidden="true">
           <div className="modal-dialog">
@@ -110,14 +112,14 @@ module.exports = React.createClass({
                     </div>
                     <div className="modal-body container">
 						<div className="row">
-							<div className={"col col-md-4 form-group" + (this.state.roleError ? " has-error" : "")} data-validation-key="role">
-								<Dropdown placeholder={this.state.role} list={this.state.roles} select={this.setDropdownData.bind(this, "role")} />
+							<div className="col col-md-4" data-validation-key="role">
+								<Dropdown error={this.state.roleError} placeholder={this.state.role} list={this.state.roles} select={this.setDropdownData.bind(this, "role")} />
 							</div>
 							<div className="col col-md-4 form-group">
-								<Dropdown placeholder={this.state.company} list={this.state.companies} select={this.setDropdownData.bind(this, "company")} />
+								<Dropdown error={this.state.companyError} placeholder={this.state.company} list={this.state.companies} select={this.setDropdownData.bind(this, "company")} />
 							</div>
 							<div className="col col-md-4 form-group">
-								<Dropdown placeholder={this.state.operatingArea} list={this.state.operatingAreas} select={this.setDropdownData.bind(this, "operatingArea")} />
+								<Dropdown error={this.state.operatingAreaError} placeholder={this.state.operatingArea} list={this.state.operatingAreas} select={this.setDropdownData.bind(this, "operatingArea")} />
 							</div>
 						</div>
 						<div className="row">
@@ -146,6 +148,7 @@ module.exports = React.createClass({
 						</div>
                     </div>
                     <div className="modal-footer">
+                        <span className="error-message">{this.state.errorMessage}</span>
                         <button type="button" className="btn btn-default" disabled={this.state.loading} data-dismiss="modal" onClick={this.reset}>Close</button>
                         <button type="button" className="btn btn-primary" disabled={this.state.loading} onClick={this.save}>Save</button>
                     </div>
