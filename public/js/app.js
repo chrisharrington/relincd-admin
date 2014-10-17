@@ -90,6 +90,19 @@
   globals.require.list = list;
   globals.require.brunch = true;
 })();
+require.register("actions/user", function(exports, require, module) {
+var constants = require("../constants");
+
+module.exports = {
+	create: function(user) {
+		return {
+			type: constants.USER_CREATE,
+			user: user
+		};
+	}
+};
+});
+
 require.register("application", function(exports, require, module) {
 /* jshint node: true */
 "use strict";
@@ -185,7 +198,8 @@ require.register("components/newUserModal", function(exports, require, module) {
 
 var React = require("react"),
     Dropdown = require("components/dropdown"),
-	User = require("models/user");
+	User = require("models/user"),
+	EventEmitter = require("eventEmitter");
 
 module.exports = React.createClass({displayName: 'exports',
     getInitialState: function() {
@@ -216,6 +230,10 @@ module.exports = React.createClass({displayName: 'exports',
         };
     },
 	
+	componentWillMount: function() {
+		
+	},
+	
 	reset: function() {
 		this.setState(this.getInitialState());	
 	},
@@ -223,9 +241,8 @@ module.exports = React.createClass({displayName: 'exports',
 	save: function() {
 		var user = _buildUser(this);
 		var errors = user.validate();
-		if (errors)
-			_setErrors(errors, this);
-		else {
+		_setErrors(errors, this);
+		if (errors.length === 0) {
             var me = this;
             this.setState({ loading: true });
             
@@ -242,7 +259,7 @@ module.exports = React.createClass({displayName: 'exports',
 				role: context.state.role === initial.role ? undefined : context.state.role,
 				company: context.state.company === initial.company ? undefined : context.state.company,
 				operatingArea: context.state.operatingArea === initial.operatingArea ? undefined : context.state.operatingArea,
-				firstName: undefined,
+				firstName: context.state.firstName,
 				lastName: context.state.lastName,
 				phone: context.state.phone,
 				email: context.state.email,
@@ -252,12 +269,18 @@ module.exports = React.createClass({displayName: 'exports',
 		}
 		
 		function _setErrors(errors, context) {
-            var newState = {}, keyed = _getErrorKeys(errors);
+            var newState = {}, keyed = errors.dict("key"), count = 0, message;
 			for (var name in context.state)
-				if (name.endsWith("Error"))
-					newState[name] = false;
-			newState[error.key + "Error"] = true;
-            newState.errorMessage = error.message;
+				if (name.endsWith("Error")) {
+					var error = keyed[name.replace("Error", "")];
+					newState[name] = error !== undefined;
+					if (error !== undefined) {
+						if (count === 0)
+							message = error.message;
+						count++;
+					}
+				}
+			newState.errorMessage = count === 0 ? "" : count === 1 ? message : "Please fix the fields outlined in red.";
             context.setState(newState);
 		}
         
@@ -305,40 +328,54 @@ module.exports = React.createClass({displayName: 'exports',
 							)
 						), 
 						React.DOM.div({className: "row"}, 
-							React.DOM.div({className: "col col-md-6 form-group", 'data-validation-key': "firstName"}, 
+							React.DOM.div({className: "col col-md-6 form-group" + (this.state.firstNameError ? " has-error" : "")}, 
 								React.DOM.input({type: "text", className: "form-control", value: this.state.firstName, onChange: this.setTextData.bind(this, "firstName"), placeholder: "First name..."})
 							), 
-							React.DOM.div({className: "col col-md-6 form-group"}, 
+							React.DOM.div({className: "col col-md-6 form-group" + (this.state.lastNameError ? " has-error" : "")}, 
 								React.DOM.input({type: "text", className: "form-control", value: this.state.lastName, onChange: this.setTextData.bind(this, "lastName"), placeholder: "Last name..."})
 							)
 						), 
 						React.DOM.div({className: "row"}, 
-							React.DOM.div({className: "col col-md-6"}, 
+							React.DOM.div({className: "col col-md-6 form-group" + (this.state.phoneError ? " has-error" : "")}, 
 								React.DOM.input({type: "text", className: "form-control", value: this.state.phone, onChange: this.setTextData.bind(this, "phone"), placeholder: "Phone number..."})
 							), 
-							React.DOM.div({className: "col col-md-6"}, 
+							React.DOM.div({className: "col col-md-6 form-group" + (this.state.emailError ? " has-error" : "")}, 
 								React.DOM.input({type: "text", className: "form-control", value: this.state.email, onChange: this.setTextData.bind(this, "email"), placeholder: "Email address..."})
 							)
 						), 
 						React.DOM.div({className: "row"}, 
-							React.DOM.div({className: "col col-md-6"}, 
+							React.DOM.div({className: "col col-md-6 form-group" + (this.state.passwordError ? " has-error" : "")}, 
 								React.DOM.input({type: "password", className: "form-control", value: this.state.password, onChange: this.setTextData.bind(this, "password"), placeholder: "Password..."})
 							), 
-							React.DOM.div({className: "col col-md-6"}, 
+							React.DOM.div({className: "col col-md-6 form-group" + (this.state.confirmedPasswordError ? " has-error" : "")}, 
 								React.DOM.input({type: "password", className: "form-control", value: this.state.confirmedPassword, onChange: this.setTextData.bind(this, "confirmedPassword"), placeholder: "Confirm password..."})
 							)
 						)
                     ), 
                     React.DOM.div({className: "modal-footer"}, 
-                        React.DOM.span({className: "error-message"}, this.state.errorMessage), 
-                        React.DOM.button({type: "button", className: "btn btn-default", disabled: this.state.loading, 'data-dismiss': "modal", onClick: this.reset}, "Close"), 
-                        React.DOM.button({type: "button", className: "btn btn-primary", disabled: this.state.loading, onClick: this.save}, "Save")
+						React.DOM.div({className: "row"}, 
+							React.DOM.div({className: "col col-md-6"}, 
+								React.DOM.span({className: "error-message" + (this.state.errorMessage === "" ? "" : " show")}, this.state.errorMessage)
+							), 
+							React.DOM.div({className: "col col-md-6"}, 
+								React.DOM.button({type: "button", className: "btn btn-default", disabled: this.state.loading, 'data-dismiss': "modal", onClick: this.reset}, "Close"), 
+								React.DOM.button({type: "button", className: "btn btn-primary", disabled: this.state.loading, onClick: this.save}, "Save")
+							)
+						)
                     )
                 )
             )
         );
     }
 });
+});
+
+require.register("constants", function(exports, require, module) {
+module.exports = {
+	VIEW_ACTION: "view-action",
+	
+	USER_CREATE: "user-create"
+};
 });
 
 require.register("controller", function(exports, require, module) {
@@ -361,27 +398,39 @@ var Controller = Backbone.Marionette.Controller.extend({
 module.exports = Controller;
 });
 
-require.register("dispatchers/city", function(exports, require, module) {
+require.register("dispatcher/app", function(exports, require, module) {
 /* jshint node: true */
 "use strict";
 
-var Dispatcher = require("flux").Dispatcher;
+var Dispatcher = require("flux").Dispatcher,
+	constants = require("../constants");
 
-module.exports = new Dispatcher();
+var merge = require("react/lib/merge");
+
+var AppDispatcher = merge(Dispatcher.prototype, {
+	handleViewAction: function(action) {
+		this.dispatch({
+      		source: constants.VIEW_ACTION,
+      		action: action
+    	});
+  	}
 });
 
-require.register("dispatchers/user", function(exports, require, module) {
-/* jshint node: true */
-"use strict";
-
-var Dispatcher = require("flux").Dispatcher;
-
-module.exports = new Dispatcher();
+module.exports = AppDispatcher;
 });
 
-require.register("extensions/object", function(exports, require, module) {
+require.register("dispatcher/emitter", function(exports, require, module) {
+var EventEmitter = require("eventEmitter");
+
+module.exports = new EventEmitter();
+});
+
+require.register("extensions/array", function(exports, require, module) {
 Array.prototype.dict = function(prop) {
-      
+    var obj = {};
+    for (var i = 0; i < this.length; i++)
+        obj[this[i][prop]] = this[i];
+    return obj;
 };
 });
 
@@ -390,10 +439,10 @@ String.prototype.endsWith = function(value) {
 	if (value.length > this.length)
 		return false;
 	return value.length <= this.length && this.substr(this.length - value.length, value.length) === value;
-}
+};
 });
 
-;require.register("initialize", function(exports, require, module) {
+require.register("initialize", function(exports, require, module) {
 /* jshint node: true */
 "use strict";
 
@@ -401,7 +450,8 @@ var app = require("application"),
 	Header = require("components/header"),
     Controller = require("controller"),
     Router = require("router"),
-    string = require("extensions/string");
+    string = require("extensions/string"),
+	array = require("extensions/array");
 
 $(function () {
     app.addInitializer(function initializeRouter() {
@@ -419,7 +469,7 @@ var validation = require("utilities/validation");
 
 module.exports = Backbone.Model.extend({
 	validate: function() {
-		var attrs = this.attributes, errors = {};
+		var attrs = this.attributes, errors = [];
 		if (!validation.required(attrs.role))
 			errors.push({ key: "role", message: "The role is required." });
 		if (!validation.required(attrs.company))
@@ -430,7 +480,7 @@ module.exports = Backbone.Model.extend({
 			errors.push({ key: "firstName", message: "The first name is required." });
 		if (!validation.required(attrs.lastName))
 			errors.push({ key: "lastName", message: "The last name is required." });
-		if (!validation.phone(attrs.phone))
+		if (attrs.phone !== "" && !validation.phone(attrs.phone))
 			errors.push({ key: "phone", message: "The phone number is invalid." });
 		if (!validation.email(attrs.email))
 			errors.push({ key: "email", message: "The email address is invalid." });
@@ -438,9 +488,11 @@ module.exports = Backbone.Model.extend({
 			errors.push({ key: "password", message: "The password is required." });
 		if (!validation.required(attrs.confirmedPassword))
 			errors.push({ key: "confirmedPassword", message: "The confirmed password is required." });
-		if (attrs.password !== attrs.confirmedPassword)
-			errors.push({ key: ["password", "confirmedPassword"], message: "The passwords must match." });
-        return errors.length === 0 ? undefined : errors;
+		if (attrs.password !== attrs.confirmedPassword) {
+			errors.push({ key: "password", message: "The passwords must match." });
+			errors.push({ key: "confirmedPassword", message: "The passwords must match." });
+		}
+        return errors;
 	}
 });
 });
@@ -514,22 +566,27 @@ require.register("stores/user", function(exports, require, module) {
 "use strict";
 
 var Backbone = require("backbone"),
+	emitter = require("../dispatcher/emitter"),
     dispatcher = require("../dispatchers/user");
 
 var Model = Backbone.Model.extend({});
 
 var Store = Backbone.Collection.extend({
-    url: "/api/geodata/city_county_links_for_state_of/CA.json",
     model: Model
 });
 
 var store = new Store();
 
-store.dispatchToken = dispatcher.register(function dispatchCallback(payload) {
-    switch (payload.actionType) {
-        case "fetch":
-            store.fetch();
-    }
+dispatcher.register(function(payload) {
+	switch (payload.action.type) {
+		case "create":
+			store.add(payload.action.user);
+	}
+});
+
+store.on("add", function(user) {
+	// persist user to server here
+	
 });
 
 module.exports = store;
@@ -543,7 +600,7 @@ module.exports = {
 	
 	phone: function(value) {
 		value = value.replace(/[\D]/g, "");
-		return value.length !== 10;
+		return value.length === 10;
 	},
 	
 	email: function(value) {

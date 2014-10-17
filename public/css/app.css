@@ -8353,6 +8353,13 @@ div.dropdown >button,
 div.dropdown >ul {
   width: 100%;
 }
+div.dropdown >button {
+  -webkit-transition: border-color ease-in-out 150ms;
+  -moz-transition: border-color ease-in-out 150ms;
+  -o-transition: border-color ease-in-out 150ms;
+  -ms-transition: border-color ease-in-out 150ms;
+  transition: border-color ease-in-out 150ms;
+}
 div.dropdown >button >span {
   float: left;
 }
@@ -8422,13 +8429,26 @@ body>div.content {
 .management-container #new-user-modal .modal-body.container .row>.col {
   margin-bottom: 15px;
 }
-.management-container #new-user-modal .modal-footer>.error-message {
+.management-container #new-user-modal .modal-footer .error-message {
   float: left;
   color: #a94442;
   height: 34px;
   line-height: 34px !important;
   display: inline-block;
   vertical-align: middle;
+  opacity: 0;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  filter: alpha(opacity=0);
+  -webkit-transition: opacity ease 150ms;
+  -moz-transition: opacity ease 150ms;
+  -o-transition: opacity ease 150ms;
+  -ms-transition: opacity ease 150ms;
+  transition: opacity ease 150ms;
+}
+.management-container #new-user-modal .modal-footer .error-message.show {
+  opacity: 1;
+  -ms-filter: none;
+  filter: none;
 }
 
 

@@ -5,7 +5,8 @@ var app = require("application"),
 	Header = require("components/header"),
     Controller = require("controller"),
     Router = require("router"),
-    string = require("extensions/string");
+    string = require("extensions/string"),
+	array = require("extensions/array");
 
 $(function () {
     app.addInitializer(function initializeRouter() {

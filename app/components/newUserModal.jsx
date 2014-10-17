@@ -3,7 +3,10 @@
 
 var React = require("react"),
     Dropdown = require("components/dropdown"),
-	User = require("models/user");
+	User = require("models/user"),
+	dispatcher = require("dispatcher/app"),
+	constants = require("constants"),
+	UserActions = require("actions/user");
 
 module.exports = React.createClass({
     getInitialState: function() {
@@ -34,6 +37,12 @@ module.exports = React.createClass({
         };
     },
 	
+	componentWillMount: function() {
+		function _addUserToList(user) {
+			console.log("user added " + user);
+		};
+	},
+	
 	reset: function() {
 		this.setState(this.getInitialState());	
 	},
@@ -41,12 +50,12 @@ module.exports = React.createClass({
 	save: function() {
 		var user = _buildUser(this);
 		var errors = user.validate();
-		if (errors)
-			_setErrors(errors, this);
-		else {
+		_setErrors(errors, this);
+		if (errors.length === 0) {
             var me = this;
             this.setState({ loading: true });
             
+			dispatcher.handleViewAction(UserActions.createUser(user));
             setTimeout(function() {
                 $("#new-user-modal").modal("hide");
                 me.reset();
@@ -60,7 +69,7 @@ module.exports = React.createClass({
 				role: context.state.role === initial.role ? undefined : context.state.role,
 				company: context.state.company === initial.company ? undefined : context.state.company,
 				operatingArea: context.state.operatingArea === initial.operatingArea ? undefined : context.state.operatingArea,
-				firstName: undefined,
+				firstName: context.state.firstName,
 				lastName: context.state.lastName,
 				phone: context.state.phone,
 				email: context.state.email,
@@ -70,12 +79,18 @@ module.exports = React.createClass({
 		}
 		
 		function _setErrors(errors, context) {
-            var newState = {}, keyed = _getErrorKeys(errors);
+            var newState = {}, keyed = errors.dict("key"), count = 0, message;
 			for (var name in context.state)
-				if (name.endsWith("Error"))
-					newState[name] = false;
-			newState[error.key + "Error"] = true;
-            newState.errorMessage = error.message;
+				if (name.endsWith("Error")) {
+					var error = keyed[name.replace("Error", "")];
+					newState[name] = error !== undefined;
+					if (error !== undefined) {
+						if (count === 0)
+							message = error.message;
+						count++;
+					}
+				}
+			newState.errorMessage = count === 0 ? "" : count === 1 ? message : "Please fix the fields outlined in red.";
             context.setState(newState);
 		}
         
@@ -123,34 +138,40 @@ module.exports = React.createClass({
 							</div>
 						</div>
 						<div className="row">
-							<div className="col col-md-6 form-group" data-validation-key="firstName">
+							<div className={"col col-md-6 form-group" + (this.state.firstNameError ? " has-error" : "")}>
 								<input type="text" className="form-control" value={this.state.firstName} onChange={this.setTextData.bind(this, "firstName")} placeholder="First name..." />
 							</div>
-							<div className="col col-md-6 form-group">
+							<div className={"col col-md-6 form-group" + (this.state.lastNameError ? " has-error" : "")}>
 								<input type="text" className="form-control" value={this.state.lastName} onChange={this.setTextData.bind(this, "lastName")} placeholder="Last name..." />
 							</div>
 						</div>
 						<div className="row">
-							<div className="col col-md-6">
+							<div className={"col col-md-6 form-group" + (this.state.phoneError ? " has-error" : "")}>
 								<input type="text" className="form-control" value={this.state.phone} onChange={this.setTextData.bind(this, "phone")} placeholder="Phone number..." />
 							</div>
-							<div className="col col-md-6">
+							<div className={"col col-md-6 form-group" + (this.state.emailError ? " has-error" : "")}>
 								<input type="text" className="form-control" value={this.state.email} onChange={this.setTextData.bind(this, "email")} placeholder="Email address..." />
 							</div>
 						</div>
 						<div className="row">
-							<div className="col col-md-6">
+							<div className={"col col-md-6 form-group" + (this.state.passwordError ? " has-error" : "")}>
 								<input type="password" className="form-control" value={this.state.password} onChange={this.setTextData.bind(this, "password")} placeholder="Password..." />
 							</div>
-							<div className="col col-md-6">
+							<div className={"col col-md-6 form-group" + (this.state.confirmedPasswordError ? " has-error" : "")}>
 								<input type="password" className="form-control" value={this.state.confirmedPassword} onChange={this.setTextData.bind(this, "confirmedPassword")} placeholder="Confirm password..." />
 							</div>
 						</div>
                     </div>
                     <div className="modal-footer">
-                        <span className="error-message">{this.state.errorMessage}</span>
-                        <button type="button" className="btn btn-default" disabled={this.state.loading} data-dismiss="modal" onClick={this.reset}>Close</button>
-                        <button type="button" className="btn btn-primary" disabled={this.state.loading} onClick={this.save}>Save</button>
+						<div className="row">
+							<div className="col col-md-6">
+								<span className={"error-message" + (this.state.errorMessage === "" ? "" : " show")}>{this.state.errorMessage}</span>
+							</div>
+							<div className="col col-md-6">
+								<button type="button" className="btn btn-default" disabled={this.state.loading} data-dismiss="modal" onClick={this.reset}>Close</button>
+								<button type="button" className="btn btn-primary" disabled={this.state.loading} onClick={this.save}>Save</button>
+							</div>
+						</div>
                     </div>
                 </div>
             </div>

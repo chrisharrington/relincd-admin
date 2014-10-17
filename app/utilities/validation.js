@@ -5,7 +5,7 @@ module.exports = {
 	
 	phone: function(value) {
 		value = value.replace(/[\D]/g, "");
-		return value.length !== 10;
+		return value.length === 10;
 	},
 	
 	email: function(value) {

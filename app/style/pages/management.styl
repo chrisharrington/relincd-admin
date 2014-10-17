@@ -9,6 +9,8 @@
 			.row>.col { margin-bottom:spacing; }
         }
         
-        .modal-footer>.error-message { float:left; color:#a94442; vertical-centre(34px); }
+        .modal-footer .error-message { float:left; color:#a94442; vertical-centre(34px); opacity:0; transition:opacity ease 150ms;
+			&.show { opacity:1; }
+		}
     }
 }

@@ -2,22 +2,30 @@
 "use strict";
 
 var Backbone = require("backbone"),
-    dispatcher = require("../dispatchers/user");
+	UserActions = require("actions/user"),
+	emitter = require("../dispatcher/emitter"),
+    dispatcher = require("../dispatchers/user"),
+	constants = rquire("../constants";
 
 var Model = Backbone.Model.extend({});
 
 var Store = Backbone.Collection.extend({
-    url: "/api/geodata/city_county_links_for_state_of/CA.json",
     model: Model
 });
 
 var store = new Store();
 
-store.dispatchToken = dispatcher.register(function dispatchCallback(payload) {
-    switch (payload.actionType) {
-        case "fetch":
-            store.fetch();
-    }
+dispatcher.register(function(payload) {
+	if (payload.source === constants.VIEW_ACTION && payload.action.type === constants.USER_CREATE)
+		store.add(payload.action.user);
+	else if (payload.source === constants.SERVER_ACTION && payload.action.type === constants.USER_CREATE)
+		
+});
+
+store.on("add", function(user) {
+	// persist user to server here
+	
+	dispatcher.handleServerAction(UserActions.userCreated(user));
 });
 
 module.exports = store;

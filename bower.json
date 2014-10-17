@@ -15,7 +15,8 @@
     "marionette": "~2.2.1",
     "fontawesome": "~4.2.0",
     "flux": "~2.0.2",
-    "bootstrap": "~3.2.0"
+    "bootstrap": "~3.2.0",
+    "eventEmitter": "~4.2.9"
   },
   "overrides": {
     "react": {
