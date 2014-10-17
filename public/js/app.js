@@ -220,18 +220,19 @@ module.exports = React.createClass({displayName: 'exports',
 	},
 	
 	save: function() {
-		var me = this;
-		this.setState({ loading: true });
-		
 		var user = _buildUser(this);
 		var error = user.validate();
 		if (error)
-			_setError(error);
-		
-		setTimeout(function() {
-			$("#new-user-modal").modal("hide");
-			me.reset();
-		}, 1000);
+			_setError(error, this);
+		else {
+            var me = this;
+            this.setState({ loading: true });
+            
+            setTimeout(function() {
+                $("#new-user-modal").modal("hide");
+                me.reset();
+            }, 1000);
+        }
 		
 		function _buildUser(context) {
 			var initial = context.getInitialState();
@@ -249,11 +250,12 @@ module.exports = React.createClass({displayName: 'exports',
 			});
 		}
 		
-		function _setError(error) {
-			for (var name in this.state)
+		function _setError(error, context) {
+            debugger;
+			for (var name in context.state)
 				if (name.endsWith("Error"))
-					this.state[name] = false;
-			this.state[error.key + "Error"] = true;
+					context.state[name] = false;
+			context.state[error.key + "Error"] = true;
 		}
 	},
 	
@@ -375,8 +377,6 @@ module.exports = new Dispatcher();
 });
 
 require.register("extensions/string", function(exports, require, module) {
-alert("dladflaf");
-
 String.prototype.endsWith = function(value) {
 	if (value.length > this.length)
 		return false;
@@ -391,7 +391,8 @@ String.prototype.endsWith = function(value) {
 var app = require("application"),
 	Header = require("components/header"),
     Controller = require("controller"),
-    Router = require("router");
+    Router = require("router"),
+    string = require("extensions/string");
 
 $(function () {
     app.addInitializer(function initializeRouter() {

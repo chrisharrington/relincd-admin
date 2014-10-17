@@ -1,5 +1,3 @@
-alert("dladflaf");
-
 String.prototype.endsWith = function(value) {
 	if (value.length > this.length)
 		return false;

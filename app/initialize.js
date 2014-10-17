@@ -4,7 +4,8 @@
 var app = require("application"),
 	Header = require("components/header"),
     Controller = require("controller"),
-    Router = require("router");
+    Router = require("router"),
+    string = require("extensions/string");
 
 $(function () {
     app.addInitializer(function initializeRouter() {

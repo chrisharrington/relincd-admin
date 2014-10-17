@@ -38,18 +38,19 @@ module.exports = React.createClass({
 	},
 	
 	save: function() {
-		var me = this;
-		this.setState({ loading: true });
-		
 		var user = _buildUser(this);
 		var error = user.validate();
 		if (error)
-			_setError(error);
-		
-		setTimeout(function() {
-			$("#new-user-modal").modal("hide");
-			me.reset();
-		}, 1000);
+			_setError(error, this);
+		else {
+            var me = this;
+            this.setState({ loading: true });
+            
+            setTimeout(function() {
+                $("#new-user-modal").modal("hide");
+                me.reset();
+            }, 1000);
+        }
 		
 		function _buildUser(context) {
 			var initial = context.getInitialState();
@@ -67,11 +68,12 @@ module.exports = React.createClass({
 			});
 		}
 		
-		function _setError(error) {
-			for (var name in this.state)
+		function _setError(error, context) {
+            debugger;
+			for (var name in context.state)
 				if (name.endsWith("Error"))
-					this.state[name] = false;
-			this.state[error.key + "Error"] = true;
+					context.state[name] = false;
+			context.state[error.key + "Error"] = true;
 		}
 	},
 	
