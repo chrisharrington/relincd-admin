@@ -202,8 +202,7 @@ var React = require("react"),
     UserActions = require("actions/user"),
     
 	constants = require("constants"),
-	viewEmitter = require("dispatcher/viewEmitter"),
-    storeEmitter = require("dispatcher/storeEmitter");
+	emitter = require("dispatcher/emitter");
 
 module.exports = React.createClass({displayName: 'exports',
     getInitialState: function() {
@@ -236,7 +235,7 @@ module.exports = React.createClass({displayName: 'exports',
 	
 	componentWillMount: function() {
         var me = this;
-        storeEmitter.on(constants.USER_CREATE, function(user) {
+        emitter.on(constants.user.USER_CREATED, function(user) {
             // add user to external list
             $("#new-user-modal").modal("hide");
             me.reset();
@@ -255,7 +254,7 @@ module.exports = React.createClass({displayName: 'exports',
             var me = this;
             this.setState({ loading: true });
             
-            viewEmitter.emit(constants.USER_CREATE, user);
+            emitter.emit(constants.user.CREATE_USER, user);
         //}
 		
 		function _buildUser(context) {
@@ -381,7 +380,10 @@ module.exports = {
 	VIEW_ACTION: "view-action",
 	SERVER_ACTION: "server-action",
 	
-	USER_CREATE: "user-create"
+    user: {
+        CREATE_USER: "create-user",
+        USER_CREATED: "user-created"
+    }
 };
 });
 
@@ -405,11 +407,7 @@ var Controller = Backbone.Marionette.Controller.extend({
 module.exports = Controller;
 });
 
-require.register("dispatcher/storeEmitter", function(exports, require, module) {
-module.exports = new EventEmitter();
-});
-
-require.register("dispatcher/viewEmitter", function(exports, require, module) {
+require.register("dispatcher/emitter", function(exports, require, module) {
 module.exports = new EventEmitter();
 });
 
@@ -542,8 +540,7 @@ require.register("stores/user", function(exports, require, module) {
 
 var Backbone = require("backbone"),
     
-	viewEmitter = require("dispatcher/viewEmitter"),
-    storeEmitter = require("dispatcher/storeEmitter"),
+    emitter = require("dispatcher/emitter"),
 	constants = require("constants");
 
 var Model = Backbone.Model.extend({});
@@ -551,10 +548,10 @@ var Store = Backbone.Collection.extend({ model: Model });
 
 var store = new Store();
 
-viewEmitter.on(constants.USER_CREATE, function(user) {
+emitter.on(constants.user.CREATE_USER, function(user) {
     // persist.then(function() {
     store.add(user);
-    storeEmitter.emit(constants.USER_CREATE, user);
+    emitter.emit(constants.user.USER_CREATED, user);
     // });
 });
 

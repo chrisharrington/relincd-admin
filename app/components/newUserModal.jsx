@@ -7,8 +7,7 @@ var React = require("react"),
     UserActions = require("actions/user"),
     
 	constants = require("constants"),
-	viewEmitter = require("dispatcher/viewEmitter"),
-    storeEmitter = require("dispatcher/storeEmitter");
+	emitter = require("dispatcher/emitter");
 
 module.exports = React.createClass({
     getInitialState: function() {
@@ -41,7 +40,7 @@ module.exports = React.createClass({
 	
 	componentWillMount: function() {
         var me = this;
-        storeEmitter.on(constants.USER_CREATE, function(user) {
+        emitter.on(constants.user.USER_CREATED, function(user) {
             // add user to external list
             $("#new-user-modal").modal("hide");
             me.reset();
@@ -60,7 +59,7 @@ module.exports = React.createClass({
             var me = this;
             this.setState({ loading: true });
             
-            viewEmitter.emit(constants.USER_CREATE, user);
+            emitter.emit(constants.user.CREATE_USER, user);
         //}
 		
 		function _buildUser(context) {
