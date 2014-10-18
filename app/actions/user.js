@@ -3,8 +3,8 @@ var constants = require("../constants");
 module.exports = {
 	create: function(user) {
 		return {
-			type: constants.USER_CREATE,
-			user: user
+			type: constants.user.CREATE_USER,
+			content: user
 		};
 	}
 };

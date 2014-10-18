@@ -7,6 +7,7 @@ var React = require("react"),
     UserActions = require("actions/user"),
     
 	constants = require("constants"),
+    dispatcher = require("dispatcher/dispatcher"),
 	emitter = require("dispatcher/emitter");
 
 module.exports = React.createClass({
@@ -44,6 +45,7 @@ module.exports = React.createClass({
             // add user to external list
             $("#new-user-modal").modal("hide");
             me.reset();
+            console.log("user created");
         });
 	},
     
@@ -59,7 +61,7 @@ module.exports = React.createClass({
             var me = this;
             this.setState({ loading: true });
             
-            emitter.emit(constants.user.CREATE_USER, user);
+            dispatcher.dispatch(UserActions.create(user));
         //}
 		
 		function _buildUser(context) {

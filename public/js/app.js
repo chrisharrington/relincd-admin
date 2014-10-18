@@ -96,8 +96,8 @@ var constants = require("../constants");
 module.exports = {
 	create: function(user) {
 		return {
-			type: constants.USER_CREATE,
-			user: user
+			type: constants.user.CREATE_USER,
+			content: user
 		};
 	}
 };
@@ -202,6 +202,7 @@ var React = require("react"),
     UserActions = require("actions/user"),
     
 	constants = require("constants"),
+    dispatcher = require("dispatcher/dispatcher"),
 	emitter = require("dispatcher/emitter");
 
 module.exports = React.createClass({displayName: 'exports',
@@ -239,6 +240,7 @@ module.exports = React.createClass({displayName: 'exports',
             // add user to external list
             $("#new-user-modal").modal("hide");
             me.reset();
+            console.log("user created");
         });
 	},
     
@@ -254,7 +256,7 @@ module.exports = React.createClass({displayName: 'exports',
             var me = this;
             this.setState({ loading: true });
             
-            emitter.emit(constants.user.CREATE_USER, user);
+            dispatcher.dispatch(UserActions.create(user));
         //}
 		
 		function _buildUser(context) {
@@ -378,7 +380,6 @@ module.exports = React.createClass({displayName: 'exports',
 require.register("constants", function(exports, require, module) {
 module.exports = {
 	VIEW_ACTION: "view-action",
-	SERVER_ACTION: "server-action",
 	
     user: {
         CREATE_USER: "create-user",
@@ -405,6 +406,15 @@ var Controller = Backbone.Marionette.Controller.extend({
 });
 
 module.exports = Controller;
+});
+
+require.register("dispatcher/dispatcher", function(exports, require, module) {
+/* jshint node: true */
+"use strict";
+
+var Dispatcher = require("flux").Dispatcher;
+
+module.exports = new Dispatcher();
 });
 
 require.register("dispatcher/emitter", function(exports, require, module) {
@@ -540,6 +550,7 @@ require.register("stores/user", function(exports, require, module) {
 
 var Backbone = require("backbone"),
     
+    dispatcher = require("dispatcher/dispatcher"),
     emitter = require("dispatcher/emitter"),
 	constants = require("constants");
 
@@ -548,12 +559,20 @@ var Store = Backbone.Collection.extend({ model: Model });
 
 var store = new Store();
 
-emitter.on(constants.user.CREATE_USER, function(user) {
+store.token = dispatcher.register(function(payload) {
+    switch (payload.type) {
+        case constants.user.CREATE_USER:
+            _createUser(payload.content);
+            break;
+    } 
+});
+
+function _createUser(user) {
     // persist.then(function() {
     store.add(user);
     emitter.emit(constants.user.USER_CREATED, user);
     // });
-});
+}
 
 module.exports = store;
 });
