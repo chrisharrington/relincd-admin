@@ -8417,11 +8417,36 @@ body>div.content {
   top: 65px;
   padding: 15px 0;
 }
-.management-container >h1 {
+.management-container >h2 {
   float: left;
 }
 .management-container >div.actions {
   float: right;
+}
+.management-container >div.user-list {
+  float: left;
+  width: 100%;
+  margin-top: 15px;
+}
+.management-container >div.user-list td.actions {
+  padding: 0;
+  width: 71px;
+}
+.management-container >div.user-list i.fa-pencil,
+.management-container >div.user-list i.fa-trash {
+  float: left;
+  width: 35px;
+  text-align: center;
+  color: #aaa;
+  cursor: pointer;
+  height: 35px;
+  line-height: 35px !important;
+  display: inline-block;
+  vertical-align: middle;
+}
+.management-container >div.user-list i.fa-pencil:hover,
+.management-container >div.user-list i.fa-trash:hover {
+  color: #428bca;
 }
 .management-container #new-user-modal .modal-body.container {
   width: 100%;

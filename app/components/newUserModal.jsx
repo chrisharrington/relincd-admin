@@ -42,10 +42,8 @@ module.exports = React.createClass({
 	componentWillMount: function() {
         var me = this;
         emitter.on(constants.user.USER_CREATED, function(user) {
-            // add user to external list
             $("#new-user-modal").modal("hide");
             me.reset();
-            console.log("user created");
         });
 	},
     
@@ -57,12 +55,12 @@ module.exports = React.createClass({
 		var user = _buildUser(this);
 		var errors = user.validate();
 		_setErrors(errors, this);
-		//if (errors.length === 0) {
+		if (errors.length === 0) {
             var me = this;
             this.setState({ loading: true });
             
             dispatcher.dispatch(UserActions.create(user));
-        //}
+        }
 		
 		function _buildUser(context) {
 			var initial = context.getInitialState();

@@ -1,8 +1,14 @@
 @require "../application.styl";
 
 .management-container {
-	>h1 { float:left; }
+	>h2 { float:left; }
 	>div.actions { float:right; }
+    >div.user-list { float:left; width:100%; margin-top:spacing;
+        td.actions { padding:0; width:71px; }
+        i.fa-pencil, i.fa-trash { float:left; width:35px; text-align:center; color:#aaa; cursor:pointer; vertical-centre(35px);
+            &:hover { color:secondary-font-colour; }
+        }
+    }
     
     #new-user-modal {
         .modal-body.container { width:100%;

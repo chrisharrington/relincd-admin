@@ -3,6 +3,8 @@ module.exports = {
 	
     user: {
         CREATE_USER: "create-user",
-        USER_CREATED: "user-created"
+        USER_CREATED: "user-created",
+        
+        ALL_USERS: "all-users"
     }
 };
