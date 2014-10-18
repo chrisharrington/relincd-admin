@@ -4,9 +4,11 @@
 var React = require("react"),
     Dropdown = require("components/dropdown"),
 	User = require("models/user"),
-	dispatcher = require("dispatcher/app"),
+    UserActions = require("actions/user"),
+    
 	constants = require("constants"),
-	UserActions = require("actions/user");
+	viewEmitter = require("dispatcher/viewEmitter"),
+    storeEmitter = require("dispatcher/storeEmitter");
 
 module.exports = React.createClass({
     getInitialState: function() {
@@ -38,11 +40,14 @@ module.exports = React.createClass({
     },
 	
 	componentWillMount: function() {
-		function _addUserToList(user) {
-			console.log("user added " + user);
-		};
+        var me = this;
+        storeEmitter.on(constants.USER_CREATE, function(user) {
+            // add user to external list
+            $("#new-user-modal").modal("hide");
+            me.reset();
+        });
 	},
-	
+    
 	reset: function() {
 		this.setState(this.getInitialState());	
 	},
@@ -51,16 +56,12 @@ module.exports = React.createClass({
 		var user = _buildUser(this);
 		var errors = user.validate();
 		_setErrors(errors, this);
-		if (errors.length === 0) {
+		//if (errors.length === 0) {
             var me = this;
             this.setState({ loading: true });
             
-			dispatcher.handleViewAction(UserActions.createUser(user));
-            setTimeout(function() {
-                $("#new-user-modal").modal("hide");
-                me.reset();
-            }, 1000);
-        }
+            viewEmitter.emit(constants.USER_CREATE, user);
+        //}
 		
 		function _buildUser(context) {
 			var initial = context.getInitialState();

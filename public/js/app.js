@@ -199,7 +199,11 @@ require.register("components/newUserModal", function(exports, require, module) {
 var React = require("react"),
     Dropdown = require("components/dropdown"),
 	User = require("models/user"),
-	EventEmitter = require("eventEmitter");
+    UserActions = require("actions/user"),
+    
+	constants = require("constants"),
+	viewEmitter = require("dispatcher/viewEmitter"),
+    storeEmitter = require("dispatcher/storeEmitter");
 
 module.exports = React.createClass({displayName: 'exports',
     getInitialState: function() {
@@ -231,9 +235,14 @@ module.exports = React.createClass({displayName: 'exports',
     },
 	
 	componentWillMount: function() {
-		
+        var me = this;
+        storeEmitter.on(constants.USER_CREATE, function(user) {
+            // add user to external list
+            $("#new-user-modal").modal("hide");
+            me.reset();
+        });
 	},
-	
+    
 	reset: function() {
 		this.setState(this.getInitialState());	
 	},
@@ -242,15 +251,12 @@ module.exports = React.createClass({displayName: 'exports',
 		var user = _buildUser(this);
 		var errors = user.validate();
 		_setErrors(errors, this);
-		if (errors.length === 0) {
+		//if (errors.length === 0) {
             var me = this;
             this.setState({ loading: true });
             
-            setTimeout(function() {
-                $("#new-user-modal").modal("hide");
-                me.reset();
-            }, 1000);
-        }
+            viewEmitter.emit(constants.USER_CREATE, user);
+        //}
 		
 		function _buildUser(context) {
 			var initial = context.getInitialState();
@@ -373,6 +379,7 @@ module.exports = React.createClass({displayName: 'exports',
 require.register("constants", function(exports, require, module) {
 module.exports = {
 	VIEW_ACTION: "view-action",
+	SERVER_ACTION: "server-action",
 	
 	USER_CREATE: "user-create"
 };
@@ -398,30 +405,11 @@ var Controller = Backbone.Marionette.Controller.extend({
 module.exports = Controller;
 });
 
-require.register("dispatcher/app", function(exports, require, module) {
-/* jshint node: true */
-"use strict";
-
-var Dispatcher = require("flux").Dispatcher,
-	constants = require("../constants");
-
-var merge = require("react/lib/merge");
-
-var AppDispatcher = merge(Dispatcher.prototype, {
-	handleViewAction: function(action) {
-		this.dispatch({
-      		source: constants.VIEW_ACTION,
-      		action: action
-    	});
-  	}
+require.register("dispatcher/storeEmitter", function(exports, require, module) {
+module.exports = new EventEmitter();
 });
 
-module.exports = AppDispatcher;
-});
-
-require.register("dispatcher/emitter", function(exports, require, module) {
-var EventEmitter = require("eventEmitter");
-
+require.register("dispatcher/viewEmitter", function(exports, require, module) {
 module.exports = new EventEmitter();
 });
 
@@ -432,6 +420,12 @@ Array.prototype.dict = function(prop) {
         obj[this[i][prop]] = this[i];
     return obj;
 };
+});
+
+require.register("extensions/index", function(exports, require, module) {
+["string", "array"].forEach(function(location) {
+    require("extensions/" + location);  
+});
 });
 
 require.register("extensions/string", function(exports, require, module) {
@@ -449,9 +443,10 @@ require.register("initialize", function(exports, require, module) {
 var app = require("application"),
 	Header = require("components/header"),
     Controller = require("controller"),
-    Router = require("router"),
-    string = require("extensions/string"),
-	array = require("extensions/array");
+    Router = require("router");
+
+require("extensions");
+require("stores");
 
 $(function () {
     app.addInitializer(function initializeRouter() {
@@ -535,30 +530,10 @@ module.exports = Backbone.Marionette.AppRouter.extend({
 });
 });
 
-require.register("stores/city", function(exports, require, module) {
-/* jshint node: true */
-"use strict";
-
-var Backbone = require("backbone"),
-    dispatcher = require("../dispatchers/city");
-
-var Model = Backbone.Model.extend({});
-
-var Store = Backbone.Collection.extend({
-    url: "/api/geodata/city_county_links_for_state_of/CA.json",
-    model: Model
+require.register("stores/index", function(exports, require, module) {
+["user"].forEach(function(location) {
+    require("stores/" + location);  
 });
-
-var store = new Store();
-
-store.dispatchToken = dispatcher.register(function dispatchCallback(payload) {
-    switch (payload.actionType) {
-        case "fetch":
-            store.fetch();
-    }
-});
-
-module.exports = store;
 });
 
 require.register("stores/user", function(exports, require, module) {
@@ -566,27 +541,21 @@ require.register("stores/user", function(exports, require, module) {
 "use strict";
 
 var Backbone = require("backbone"),
-	emitter = require("../dispatcher/emitter"),
-    dispatcher = require("../dispatchers/user");
+    
+	viewEmitter = require("dispatcher/viewEmitter"),
+    storeEmitter = require("dispatcher/storeEmitter"),
+	constants = require("constants");
 
 var Model = Backbone.Model.extend({});
-
-var Store = Backbone.Collection.extend({
-    model: Model
-});
+var Store = Backbone.Collection.extend({ model: Model });
 
 var store = new Store();
 
-dispatcher.register(function(payload) {
-	switch (payload.action.type) {
-		case "create":
-			store.add(payload.action.user);
-	}
-});
-
-store.on("add", function(user) {
-	// persist user to server here
-	
+viewEmitter.on(constants.USER_CREATE, function(user) {
+    // persist.then(function() {
+    store.add(user);
+    storeEmitter.emit(constants.USER_CREATE, user);
+    // });
 });
 
 module.exports = store;

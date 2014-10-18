@@ -2,30 +2,21 @@
 "use strict";
 
 var Backbone = require("backbone"),
-	UserActions = require("actions/user"),
-	emitter = require("../dispatcher/emitter"),
-    dispatcher = require("../dispatchers/user"),
-	constants = rquire("../constants";
+    
+	viewEmitter = require("dispatcher/viewEmitter"),
+    storeEmitter = require("dispatcher/storeEmitter"),
+	constants = require("constants");
 
 var Model = Backbone.Model.extend({});
-
-var Store = Backbone.Collection.extend({
-    model: Model
-});
+var Store = Backbone.Collection.extend({ model: Model });
 
 var store = new Store();
 
-dispatcher.register(function(payload) {
-	if (payload.source === constants.VIEW_ACTION && payload.action.type === constants.USER_CREATE)
-		store.add(payload.action.user);
-	else if (payload.source === constants.SERVER_ACTION && payload.action.type === constants.USER_CREATE)
-		
-});
-
-store.on("add", function(user) {
-	// persist user to server here
-	
-	dispatcher.handleServerAction(UserActions.userCreated(user));
+viewEmitter.on(constants.USER_CREATE, function(user) {
+    // persist.then(function() {
+    store.add(user);
+    storeEmitter.emit(constants.USER_CREATE, user);
+    // });
 });
 
 module.exports = store;

@@ -1,14 +1,7 @@
 var constants = require("../constants");
 
 module.exports = {
-	createUser: function(user) {
-		return {
-			type: constants.USER_CREATE,
-			user: user
-		};
-	},
-	
-	userCreated: function(user) {
+	create: function(user) {
 		return {
 			type: constants.USER_CREATE,
 			user: user
