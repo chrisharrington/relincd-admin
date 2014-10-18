@@ -32,6 +32,7 @@ module.exports = React.createClass({
     },
     
 	render: function () {
+        var me = this;
         var users = this.state.users.map(function(user) {
             return <tr>
                 <td>{user.attributes.firstName + " " + user.attributes.lastName}</td>
@@ -41,7 +42,7 @@ module.exports = React.createClass({
                 <td>{user.attributes.company}</td>
                 <td>{user.attributes.operatingArea}</td>
                 <td className="actions">
-                    <i className="fa fa-pencil"></i>
+                    <i className="fa fa-pencil" onClick={me.props.onEdit}></i>
                     <i className="fa fa-trash"></i>
                 </td>
             </tr>

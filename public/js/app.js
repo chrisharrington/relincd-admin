@@ -197,7 +197,79 @@ module.exports = React.createClass({displayName: 'exports',
 });
 });
 
-require.register("components/newUserModal", function(exports, require, module) {
+require.register("components/userList", function(exports, require, module) {
+/** @jsx React.DOM */
+/* jshint node: true */
+"use strict";
+
+var React = require("react"),
+    UserActions = require("actions/user"),
+    
+    emitter = require("dispatcher/emitter"),
+    dispatcher = require("dispatcher/dispatcher"),
+    constants = require("constants");
+
+module.exports = React.createClass({displayName: 'exports',
+    getInitialState: function() {
+        return {
+            users: []
+        }  
+    },
+    
+    componentWillMount: function() {
+        var me = this;
+        
+        emitter.on(constants.user.ALL_USERS, function(users) {
+            me.setState({ users: users });
+        });
+        
+        emitter.on(constants.user.USER_CREATED, function(user) {
+            var users = me.state.users;
+            users.push(user);
+            me.setState({ users: users });
+        });
+        
+        dispatcher.dispatch(UserActions.all());
+    },
+    
+	render: function () {
+        var me = this;
+        var users = this.state.users.map(function(user) {
+            return React.DOM.tr(null, 
+                React.DOM.td(null, user.attributes.firstName + " " + user.attributes.lastName), 
+                React.DOM.td(null, user.attributes.email), 
+                React.DOM.td(null, user.attributes.phone), 
+                React.DOM.td(null, user.attributes.role), 
+                React.DOM.td(null, user.attributes.company), 
+                React.DOM.td(null, user.attributes.operatingArea), 
+                React.DOM.td({className: "actions"}, 
+                    React.DOM.i({className: "fa fa-pencil", onClick: me.props.onEdit}), 
+                    React.DOM.i({className: "fa fa-trash"})
+                )
+            )
+        });
+        
+        return React.DOM.div({className: "user-list"}, 
+            React.DOM.table({className: "table table-striped table-bordered"}, 
+                React.DOM.thead(null, 
+                    React.DOM.th(null, "Name"), 
+                    React.DOM.th(null, "Email Addresss"), 
+                    React.DOM.th(null, "Phone Number"), 
+                    React.DOM.th(null, "Role"), 
+                    React.DOM.th(null, "Company"), 
+                    React.DOM.th(null, "Operating Area"), 
+                    React.DOM.th(null)
+                ), 
+                React.DOM.tbody(null, 
+                    users
+                )
+            )
+        )
+    }
+});
+});
+
+require.register("components/userModal", function(exports, require, module) {
 /** @jsx React.DOM */
 /* jshint node: true */
 "use strict";
@@ -381,77 +453,6 @@ module.exports = React.createClass({displayName: 'exports',
 });
 });
 
-require.register("components/userList", function(exports, require, module) {
-/** @jsx React.DOM */
-/* jshint node: true */
-"use strict";
-
-var React = require("react"),
-    UserActions = require("actions/user"),
-    
-    emitter = require("dispatcher/emitter"),
-    dispatcher = require("dispatcher/dispatcher"),
-    constants = require("constants");
-
-module.exports = React.createClass({displayName: 'exports',
-    getInitialState: function() {
-        return {
-            users: []
-        }  
-    },
-    
-    componentWillMount: function() {
-        var me = this;
-        
-        emitter.on(constants.user.ALL_USERS, function(users) {
-            me.setState({ users: users });
-        });
-        
-        emitter.on(constants.user.USER_CREATED, function(user) {
-            var users = me.state.users;
-            users.push(user);
-            me.setState({ users: users });
-        });
-        
-        dispatcher.dispatch(UserActions.all());
-    },
-    
-	render: function () {
-        var users = this.state.users.map(function(user) {
-            return React.DOM.tr(null, 
-                React.DOM.td(null, user.attributes.firstName + " " + user.attributes.lastName), 
-                React.DOM.td(null, user.attributes.email), 
-                React.DOM.td(null, user.attributes.phone), 
-                React.DOM.td(null, user.attributes.role), 
-                React.DOM.td(null, user.attributes.company), 
-                React.DOM.td(null, user.attributes.operatingArea), 
-                React.DOM.td({className: "actions"}, 
-                    React.DOM.i({className: "fa fa-pencil"}), 
-                    React.DOM.i({className: "fa fa-trash"})
-                )
-            )
-        });
-        
-        return React.DOM.div({className: "user-list"}, 
-            React.DOM.table({className: "table table-striped table-bordered"}, 
-                React.DOM.thead(null, 
-                    React.DOM.th(null, "Name"), 
-                    React.DOM.th(null, "Email Addresss"), 
-                    React.DOM.th(null, "Phone Number"), 
-                    React.DOM.th(null, "Role"), 
-                    React.DOM.th(null, "Company"), 
-                    React.DOM.th(null, "Operating Area"), 
-                    React.DOM.th(null)
-                ), 
-                React.DOM.tbody(null, 
-                    users
-                )
-            )
-        )
-    }
-});
-});
-
 require.register("constants", function(exports, require, module) {
 module.exports = {
 	VIEW_ACTION: "view-action",
@@ -583,22 +584,28 @@ require.register("pages/management", function(exports, require, module) {
 "use strict";
 
 var React = require("react"),
-    NewUserModal = require("components/newUserModal"),
+    UserModal = require("components/userModal"),
     UserList = require("components/userList");
 
 module.exports = React.createClass({displayName: 'exports',
-	addUser: function() {
-		
-	},
-	
+    getInitialState: function() {
+        return {
+            user: undefined
+        };
+    },
+    
+    createUser: function() {
+         $("#new-user-modal").modal("show"); 
+    },
+    
     render: function(){
         return React.DOM.div({className: "container management-container"}, 
             React.DOM.h2(null, "Management"), 
 			React.DOM.div({className: "actions"}, 
-                React.DOM.button({type: "button", className: "btn btn-primary", 'data-toggle': "modal", 'data-target': "#new-user-modal"}, "New User")
+                React.DOM.button({type: "button", className: "btn btn-primary", onClick: this.createUser}, "New User")
             ), 
-            NewUserModal({onSave:  this.addUser}), 
-            UserList(null)
+            UserModal({onSave: this.addUser, user: this.user}), 
+            UserList({onEdit: this.createUser, user: this.user})
         );
     }
 });

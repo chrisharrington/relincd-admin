@@ -2,22 +2,28 @@
 "use strict";
 
 var React = require("react"),
-    NewUserModal = require("components/newUserModal"),
+    UserModal = require("components/userModal"),
     UserList = require("components/userList");
 
 module.exports = React.createClass({
-	addUser: function() {
-		
-	},
-	
+    getInitialState: function() {
+        return {
+            user: undefined
+        };
+    },
+    
+    createUser: function() {
+         $("#new-user-modal").modal("show"); 
+    },
+    
     render: function(){
         return <div className="container management-container">
             <h2>Management</h2>
 			<div className="actions">
-                <button type="button" className="btn btn-primary" data-toggle="modal" data-target="#new-user-modal">New User</button>    
+                <button type="button" className="btn btn-primary" onClick={this.createUser}>New User</button>    
             </div>
-            <NewUserModal onSave={ this.addUser } />
-            <UserList />
+            <UserModal onSave={this.addUser} user={this.user} />
+            <UserList onEdit={this.createUser} user={this.user} />
         </div>;
     }
 });
