@@ -18,7 +18,7 @@ module.exports = React.createClass({
 			operatingAreas: [{ name: "Operating Area 1" }, { name: "Operating Area 2" }, { name: "Operating Area 3" }],
             errorMessage: "",
 			loading: false,
-            role: "Role...",
+            role: this.props.user ? this.props.user.role : "Role...",
 			roleError: false,
 			company: "Company...",
 			companyError: false,
@@ -139,7 +139,7 @@ module.exports = React.createClass({
 						</div>
 						<div className="row">
 							<div className={"col col-md-6 form-group" + (this.state.firstNameError ? " has-error" : "")}>
-								<input type="text" className="form-control" value={this.state.firstName} onChange={this.setTextData.bind(this, "firstName")} placeholder="First name..." />
+								<input type="text" className="form-control" value={this.props.user.attributes.firstName} onChange={this.setTextData.bind(this, "firstName")} placeholder="First name..." />
 							</div>
 							<div className={"col col-md-6 form-group" + (this.state.lastNameError ? " has-error" : "")}>
 								<input type="text" className="form-control" value={this.state.lastName} onChange={this.setTextData.bind(this, "lastName")} placeholder="Last name..." />

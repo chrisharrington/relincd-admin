@@ -243,7 +243,7 @@ module.exports = React.createClass({displayName: 'exports',
                 React.DOM.td(null, user.attributes.company), 
                 React.DOM.td(null, user.attributes.operatingArea), 
                 React.DOM.td({className: "actions"}, 
-                    React.DOM.i({className: "fa fa-pencil", onClick: me.props.onEdit}), 
+                    React.DOM.i({className: "fa fa-pencil", onClick: me.props.onEdit.bind(null, user)}), 
                     React.DOM.i({className: "fa fa-trash"})
                 )
             )
@@ -291,7 +291,7 @@ module.exports = React.createClass({displayName: 'exports',
 			operatingAreas: [{ name: "Operating Area 1" }, { name: "Operating Area 2" }, { name: "Operating Area 3" }],
             errorMessage: "",
 			loading: false,
-            role: "Role...",
+            role: this.props.user ? this.props.user.role : "Role...",
 			roleError: false,
 			company: "Company...",
 			companyError: false,
@@ -412,7 +412,7 @@ module.exports = React.createClass({displayName: 'exports',
 						), 
 						React.DOM.div({className: "row"}, 
 							React.DOM.div({className: "col col-md-6 form-group" + (this.state.firstNameError ? " has-error" : "")}, 
-								React.DOM.input({type: "text", className: "form-control", value: this.state.firstName, onChange: this.setTextData.bind(this, "firstName"), placeholder: "First name..."})
+								React.DOM.input({type: "text", className: "form-control", value: this.props.user.attributes.firstName, onChange: this.setTextData.bind(this, "firstName"), placeholder: "First name..."})
 							), 
 							React.DOM.div({className: "col col-md-6 form-group" + (this.state.lastNameError ? " has-error" : "")}, 
 								React.DOM.input({type: "text", className: "form-control", value: this.state.lastName, onChange: this.setTextData.bind(this, "lastName"), placeholder: "Last name..."})
@@ -584,6 +584,7 @@ require.register("pages/management", function(exports, require, module) {
 "use strict";
 
 var React = require("react"),
+    User = require("models/user"),
     UserModal = require("components/userModal"),
     UserList = require("components/userList");
 
@@ -594,18 +595,23 @@ module.exports = React.createClass({displayName: 'exports',
         };
     },
     
-    createUser: function() {
-         $("#new-user-modal").modal("show"); 
+    editUser: function(user) {
+        this.user.set(user.attributes);
+        debugger;
+        $("#new-user-modal").modal("show");
+        this.forceUpdate();
     },
     
     render: function(){
+        this.user = new User();
+        
         return React.DOM.div({className: "container management-container"}, 
             React.DOM.h2(null, "Management"), 
 			React.DOM.div({className: "actions"}, 
                 React.DOM.button({type: "button", className: "btn btn-primary", onClick: this.createUser}, "New User")
             ), 
             UserModal({onSave: this.addUser, user: this.user}), 
-            UserList({onEdit: this.createUser, user: this.user})
+            UserList({onEdit: this.editUser})
         );
     }
 });
