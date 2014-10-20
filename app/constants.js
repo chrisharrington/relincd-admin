@@ -6,5 +6,9 @@ module.exports = {
         USER_CREATED: "user-created",
         
         ALL_USERS: "all-users"
-    }
+    },
+	
+	role: {
+		ALL: "all-roles"
+	}
 };

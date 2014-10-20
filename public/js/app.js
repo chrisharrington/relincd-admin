@@ -90,6 +90,25 @@
   globals.require.list = list;
   globals.require.brunch = true;
 })();
+require.register("actions/role", function(exports, require, module) {
+var constants = require("../constants");
+
+module.exports = {
+    all: function() {
+        return {
+            type: constants.user.ALL_USERS
+        };  
+    },
+    
+	create: function(user) {
+		return {
+			type: constants.user.CREATE_USER,
+			content: user
+		};
+	}
+};
+});
+
 require.register("actions/user", function(exports, require, module) {
 var constants = require("../constants");
 
@@ -133,15 +152,15 @@ require.register("components/dropdown", function(exports, require, module) {
 
 var React = require("react");
 
-module.exports = React.createClass({displayName: 'exports',
+module.exports = React.createClass({displayName: 'exports',	
 	render: function () {
 		var items = [];
 		for (var i = 0; i < this.props.list.length; i++)
-			items.push(React.DOM.li({role: "presentation", onClick:  this.props.select.bind(this, this.props.list[i].name) }, React.DOM.a({role: "menuitem", tabindex: "-1"}, this.props.list[i].name)));
+			items.push(React.DOM.li({role: "presentation", onClick: this.props.select.bind(this, this.props.list[i].name)}, React.DOM.a({role: "menuitem", tabindex: "-1"}, this.props.list[i].name)));
 		
         return React.DOM.div({className: "dropdown" + (this.props.error ? " error" : "")}, 
             React.DOM.button({className: "btn btn-default dropdown-toggle", type: "button", id: "dropdownMenu1", 'data-toggle': "dropdown"}, 
-                 this.props.placeholder, 
+				this.props.value, 
                 React.DOM.i({className: "fa fa-caret-down"})
             ), 
             React.DOM.ul({className: "dropdown-menu", role: "menu", 'aria-labelledby': "dropdownMenu1"}, 
@@ -243,7 +262,7 @@ module.exports = React.createClass({displayName: 'exports',
                 React.DOM.td(null, user.attributes.company), 
                 React.DOM.td(null, user.attributes.operatingArea), 
                 React.DOM.td({className: "actions"}, 
-                    React.DOM.i({className: "fa fa-pencil", onClick: me.props.onEdit.bind(null, user)}), 
+                    React.DOM.i({className: "fa fa-pencil", 'data-toggle': "modal", 'data-target': "#user-modal", onClick: me.props.onEdit.bind(null, user)}), 
                     React.DOM.i({className: "fa fa-trash"})
                 )
             )
@@ -291,23 +310,14 @@ module.exports = React.createClass({displayName: 'exports',
 			operatingAreas: [{ name: "Operating Area 1" }, { name: "Operating Area 2" }, { name: "Operating Area 3" }],
             errorMessage: "",
 			loading: false,
-            role: this.props.user ? this.props.user.role : "Role...",
 			roleError: false,
-			company: "Company...",
 			companyError: false,
-			operatingArea: "Operating Area...",
 			operatingAreaError: false,
-			firstName: "",
 			firstNameError: false,
-			lastName: "",
 			lastNameError: false,
-			phone: "",
 			phoneError: false,
-			email: "",
 			emailError: false,
-			password: "",
 			passwordError: false,
-			confirmedPassword: "",
 			confirmedPasswordError: false
         };
     },
@@ -316,12 +326,15 @@ module.exports = React.createClass({displayName: 'exports',
         var me = this;
         emitter.on(constants.user.USER_CREATED, function(user) {
             $("#new-user-modal").modal("hide");
-            me.reset();
         });
+		
+		$("#user-modal").on("shown", function() {
+			me.user = _.clone(me.props.user);
+		});
 	},
     
 	reset: function() {
-		this.setState(this.getInitialState());	
+		//this.props.user = this.user;
 	},
 	
 	save: function() {
@@ -331,7 +344,6 @@ module.exports = React.createClass({displayName: 'exports',
 		if (errors.length === 0) {
             var me = this;
             this.setState({ loading: true });
-            
             dispatcher.dispatch(UserActions.create(user));
         }
 		
@@ -376,9 +388,8 @@ module.exports = React.createClass({displayName: 'exports',
 	},
 	
 	setDropdownData: function(key, value) {
-		var object = {};
-		object[key] = value;
-		this.setState(object);
+		this.props.user.set(key, value);
+		this.forceUpdate();
 	},
 	
 	setTextData: function(key, event) {
@@ -388,7 +399,7 @@ module.exports = React.createClass({displayName: 'exports',
 	},
 	
 	render: function () {
-        return React.DOM.div({className: "modal fade", id: "new-user-modal", tabindex: "-1", role: "dialog", 'aria-hidden': "true"}, 
+        return React.DOM.div({className: "modal fade", id: "user-modal", tabindex: "-1", role: "dialog", 'aria-hidden': "true"}, 
           React.DOM.div({className: "modal-dialog"}, 
                 React.DOM.div({className: "modal-content"}, 
                     React.DOM.div({className: "modal-header"}, 
@@ -400,38 +411,75 @@ module.exports = React.createClass({displayName: 'exports',
                     ), 
                     React.DOM.div({className: "modal-body container"}, 
 						React.DOM.div({className: "row"}, 
-							React.DOM.div({className: "col col-md-4", 'data-validation-key': "role"}, 
-								Dropdown({error: this.state.roleError, placeholder: this.state.role, list: this.state.roles, select: this.setDropdownData.bind(this, "role")})
+							React.DOM.div({className: "col-md-4"}, 
+								React.DOM.label(null, "Role")
 							), 
-							React.DOM.div({className: "col col-md-4 form-group"}, 
-								Dropdown({error: this.state.companyError, placeholder: this.state.company, list: this.state.companies, select: this.setDropdownData.bind(this, "company")})
-							), 
-							React.DOM.div({className: "col col-md-4 form-group"}, 
-								Dropdown({error: this.state.operatingAreaError, placeholder: this.state.operatingArea, list: this.state.operatingAreas, select: this.setDropdownData.bind(this, "operatingArea")})
+							React.DOM.div({className: "col-md-8"}, 
+								Dropdown({error: this.state.roleError, list: this.state.roles, select: this.setDropdownData.bind(this, "role"), value: this.props.user.get("role")})
 							)
 						), 
 						React.DOM.div({className: "row"}, 
-							React.DOM.div({className: "col col-md-6 form-group" + (this.state.firstNameError ? " has-error" : "")}, 
-								React.DOM.input({type: "text", className: "form-control", value: this.props.user.attributes.firstName, onChange: this.setTextData.bind(this, "firstName"), placeholder: "First name..."})
+							React.DOM.div({className: "col-md-4"}, 
+								React.DOM.label(null, "Company")
 							), 
-							React.DOM.div({className: "col col-md-6 form-group" + (this.state.lastNameError ? " has-error" : "")}, 
-								React.DOM.input({type: "text", className: "form-control", value: this.state.lastName, onChange: this.setTextData.bind(this, "lastName"), placeholder: "Last name..."})
+							React.DOM.div({className: "col-md-8"}, 
+								Dropdown({error: this.state.companyError, placeholder: "Role...", list: this.state.companies, select: this.setDropdownData.bind(this, "company"), value: this.props.user.get("company")})
 							)
 						), 
 						React.DOM.div({className: "row"}, 
-							React.DOM.div({className: "col col-md-6 form-group" + (this.state.phoneError ? " has-error" : "")}, 
-								React.DOM.input({type: "text", className: "form-control", value: this.state.phone, onChange: this.setTextData.bind(this, "phone"), placeholder: "Phone number..."})
+							React.DOM.div({className: "col-md-4"}, 
+								React.DOM.label(null, "Operating Area")
 							), 
-							React.DOM.div({className: "col col-md-6 form-group" + (this.state.emailError ? " has-error" : "")}, 
-								React.DOM.input({type: "text", className: "form-control", value: this.state.email, onChange: this.setTextData.bind(this, "email"), placeholder: "Email address..."})
+							React.DOM.div({className: "col-md-8"}, 
+								Dropdown({error: this.state.operatingAreaError, placeholder: "Role...", list: this.state.operatingAreas, select: this.setDropdownData.bind(this, "operatingArea"), value: this.props.user.get("operatingArea")})
 							)
 						), 
 						React.DOM.div({className: "row"}, 
-							React.DOM.div({className: "col col-md-6 form-group" + (this.state.passwordError ? " has-error" : "")}, 
-								React.DOM.input({type: "password", className: "form-control", value: this.state.password, onChange: this.setTextData.bind(this, "password"), placeholder: "Password..."})
+							React.DOM.div({className: "col-md-4"}, 
+								React.DOM.label(null, "First Name")
 							), 
-							React.DOM.div({className: "col col-md-6 form-group" + (this.state.confirmedPasswordError ? " has-error" : "")}, 
-								React.DOM.input({type: "password", className: "form-control", value: this.state.confirmedPassword, onChange: this.setTextData.bind(this, "confirmedPassword"), placeholder: "Confirm password..."})
+							React.DOM.div({className: "col-md-8"}, 
+								React.DOM.input({type: "text", className: "form-control", value: this.props.user.get("firstName"), onChange: this.setTextData.bind(this, "firstName")})
+							)
+						), 
+						React.DOM.div({className: "row"}, 
+							React.DOM.div({className: "col-md-4"}, 
+								React.DOM.label(null, "Last Name")
+							), 
+							React.DOM.div({className: "col-md-8"}, 
+								React.DOM.input({type: "text", className: "form-control", value: this.props.user.get("lastName"), onChange: this.setTextData.bind(this, "lastName")})
+							)
+						), 
+						React.DOM.div({className: "row"}, 
+							React.DOM.div({className: "col-md-4"}, 
+								React.DOM.label(null, "Email Address")
+							), 
+							React.DOM.div({className: "col-md-8"}, 
+								React.DOM.input({type: "text", className: "form-control", value: this.props.user.get("email"), onChange: this.setTextData.bind(this, "email")})
+							)
+						), 
+						React.DOM.div({className: "row"}, 
+							React.DOM.div({className: "col-md-4"}, 
+								React.DOM.label(null, "Phone Number")
+							), 
+							React.DOM.div({className: "col-md-8"}, 
+								React.DOM.input({type: "text", className: "form-control", value: this.props.user.get("phone"), onChange: this.setTextData.bind(this, "phone")})
+							)
+						), 
+						React.DOM.div({className: "row"}, 
+							React.DOM.div({className: "col-md-4"}, 
+								React.DOM.label(null, "Password")
+							), 
+							React.DOM.div({className: "col-md-8"}, 
+								React.DOM.input({type: "password", className: "form-control", value: this.props.user.get("password"), onChange: this.setTextData.bind(this, "password")})
+							)
+						), 
+						React.DOM.div({className: "row"}, 
+							React.DOM.div({className: "col-md-4"}, 
+								React.DOM.label(null, "Confirmed Password")
+							), 
+							React.DOM.div({className: "col-md-8"}, 
+								React.DOM.input({type: "password", className: "form-control", value: this.props.user.get("confirmedPassword"), onChange: this.setTextData.bind(this, "confirmedPassword")})
 							)
 						)
                     ), 
@@ -453,6 +501,12 @@ module.exports = React.createClass({displayName: 'exports',
 });
 });
 
+require.register("config", function(exports, require, module) {
+module.exports = {
+	fixtures: true
+};
+});
+
 require.register("constants", function(exports, require, module) {
 module.exports = {
 	VIEW_ACTION: "view-action",
@@ -462,7 +516,11 @@ module.exports = {
         USER_CREATED: "user-created",
         
         ALL_USERS: "all-users"
-    }
+    },
+	
+	role: {
+		ALL: "all-roles"
+	}
 };
 });
 
@@ -529,7 +587,11 @@ require.register("initialize", function(exports, require, module) {
 var app = require("application"),
 	Header = require("components/header"),
     Controller = require("controller"),
-    Router = require("router");
+    Router = require("router"),
+	
+	constants = require("constants"),
+	rolesStore = require("stores/roles"),
+	emitter = require("dispatcher/emitter");
 
 require("extensions");
 require("stores");
@@ -538,11 +600,28 @@ $(function () {
     app.addInitializer(function initializeRouter() {
         new Router({controller: new Controller({container: $("#app")[0]})});
 		React.renderComponent(new Header(), $("header")[0]);
+		
+		rolesStore.all().then(function(roles) {
+			debugger;
+		});
     });
 
     app.start();
 });
 
+});
+
+require.register("models/role", function(exports, require, module) {
+var validation = require("utilities/validation");
+
+module.exports = Backbone.Model.extend({
+	validate: function() {
+		var attrs = this.attributes, errors = [];
+		if (!validation.require(attrs.name))
+			errors.push({ key: "name", message: "The name is required." });
+        return errors;
+	}
+});
 });
 
 require.register("models/user", function(exports, require, module) {
@@ -591,26 +670,26 @@ var React = require("react"),
 module.exports = React.createClass({displayName: 'exports',
     getInitialState: function() {
         return {
-            user: undefined
+            user: new User()
         };
     },
     
+	newUser: function() {
+		this.setState({ user: new User(), isEdit: false });	
+	},
+	
     editUser: function(user) {
-        this.user.set(user.attributes);
-        debugger;
-        $("#new-user-modal").modal("show");
-        this.forceUpdate();
-    },
+		this.setState({ user: user, isEdit: true });
+	},
     
-    render: function(){
-        this.user = new User();
-        
+    render: function() {
         return React.DOM.div({className: "container management-container"}, 
             React.DOM.h2(null, "Management"), 
 			React.DOM.div({className: "actions"}, 
-                React.DOM.button({type: "button", className: "btn btn-primary", onClick: this.createUser}, "New User")
+                React.DOM.button({type: "button", className: "btn btn-primary", onClick: this.newUser, 'data-toggle': "modal", 'data-target': "#user-modal"}, "New User")
             ), 
-            UserModal({onSave: this.addUser, user: this.user}), 
+			
+            UserModal({onSave: this.addUser, user: this.state.user, isEdit: this.state.isEdit}), 
             UserList({onEdit: this.editUser})
         );
     }
@@ -630,10 +709,52 @@ module.exports = Backbone.Marionette.AppRouter.extend({
 });
 });
 
+require.register("stores/base", function(exports, require, module) {
+/* jshint node: true */
+"use strict";
+
+var Config = require("config"),
+	Backbone = require("backbone"),
+	
+	emitter = require("dispatcher/emitter"),
+	constants = require("constants");
+
+module.exports = function(model, constants, url) {
+	var _constants = constants;
+	var _store = Backbone.Collection.extend({ model: model, url: url });
+	
+	this.all = function() {
+		return new Promise(function(resolve, reject) {
+			_store.fetch({
+				success: function(collection, response) {
+					emitter.emit(_constants.ALL, collection.models);
+					resolve(collection.models);
+				},
+				error: function(a, b, c) {
+					debugger;
+				}
+			});
+		});
+	};
+};
+});
+
 require.register("stores/index", function(exports, require, module) {
 ["user"].forEach(function(location) {
     require("stores/" + location);  
 });
+});
+
+require.register("stores/roles", function(exports, require, module) {
+/* jshint node: true */
+"use strict";
+
+var Role = require("models/role"),
+	BaseStore = require("stores/base"),
+	
+	constants = require("constants");
+
+module.exports = new BaseStore(Role, constants.role, "fixtures/roles.json");
 });
 
 require.register("stores/user", function(exports, require, module) {
@@ -641,12 +762,12 @@ require.register("stores/user", function(exports, require, module) {
 "use strict";
 
 var Backbone = require("backbone"),
+	Model = require("models/user"),
     
     dispatcher = require("dispatcher/dispatcher"),
     emitter = require("dispatcher/emitter"),
 	constants = require("constants");
 
-var Model = Backbone.Model.extend({});
 var Store = Backbone.Collection.extend({ model: Model });
 
 var store = new Store();
@@ -654,22 +775,22 @@ var store = new Store();
 store.token = dispatcher.register(function(payload) {
     switch (payload.type) {
         case constants.user.CREATE_USER:
-            _createUser(payload.content);
+            _create(payload.content);
             break;
         case constants.user.ALL_USERS:
-            _getAllUsers();
+            _all();
             break;
     } 
 });
 
-function _createUser(user) {
+function _create(user) {
     // persist().then(function() {
     store.add(user);
     emitter.emit(constants.user.USER_CREATED, user);
     // });
 }
 
-function _getAllUsers() {
+function _all() {
     // getFromServer().then(function(users) {
         var users = [
             { firstName: "Chris", lastName: "Harrington", email: "chrisharrington99@gmail.com", phone: "4037102038", role: "Relincd", company: "IONO", operatingArea: "the area" },

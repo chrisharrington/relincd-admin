@@ -42,7 +42,7 @@ module.exports = React.createClass({
                 <td>{user.attributes.company}</td>
                 <td>{user.attributes.operatingArea}</td>
                 <td className="actions">
-                    <i className="fa fa-pencil" onClick={me.props.onEdit.bind(null, user)}></i>
+                    <i className="fa fa-pencil" data-toggle="modal" data-target="#user-modal" onClick={me.props.onEdit.bind(null, user)}></i>
                     <i className="fa fa-trash"></i>
                 </td>
             </tr>

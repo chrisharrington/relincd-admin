@@ -9,26 +9,26 @@ var React = require("react"),
 module.exports = React.createClass({
     getInitialState: function() {
         return {
-            user: undefined
+            user: new User()
         };
     },
     
+	newUser: function() {
+		this.setState({ user: new User(), isEdit: false });	
+	},
+	
     editUser: function(user) {
-        this.user.set(user.attributes);
-        debugger;
-        $("#new-user-modal").modal("show");
-        this.forceUpdate();
-    },
+		this.setState({ user: user, isEdit: true });
+	},
     
-    render: function(){
-        this.user = new User();
-        
+    render: function() {
         return <div className="container management-container">
             <h2>Management</h2>
 			<div className="actions">
-                <button type="button" className="btn btn-primary" onClick={this.createUser}>New User</button>    
+                <button type="button" className="btn btn-primary" onClick={this.newUser} data-toggle="modal" data-target="#user-modal">New User</button>    
             </div>
-            <UserModal onSave={this.addUser} user={this.user} />
+			
+            <UserModal onSave={this.addUser} user={this.state.user} isEdit={this.state.isEdit} />
             <UserList onEdit={this.editUser} />
         </div>;
     }

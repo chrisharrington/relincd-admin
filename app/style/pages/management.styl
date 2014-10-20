@@ -10,9 +10,12 @@
         }
     }
     
-    #new-user-modal {
+    #user-modal {
         .modal-body.container { width:100%;
-			.row>.col { margin-bottom:spacing; }
+			.row { margin-top:tiny-spacing;
+				
+				label { color:black; vertical-centre(35px); }
+			}
         }
         
         .modal-footer .error-message { float:left; color:#a94442; vertical-centre(34px); opacity:0; transition:opacity ease 150ms;

@@ -2,12 +2,12 @@
 "use strict";
 
 var Backbone = require("backbone"),
+	Model = require("models/user"),
     
     dispatcher = require("dispatcher/dispatcher"),
     emitter = require("dispatcher/emitter"),
 	constants = require("constants");
 
-var Model = Backbone.Model.extend({});
 var Store = Backbone.Collection.extend({ model: Model });
 
 var store = new Store();
@@ -15,22 +15,22 @@ var store = new Store();
 store.token = dispatcher.register(function(payload) {
     switch (payload.type) {
         case constants.user.CREATE_USER:
-            _createUser(payload.content);
+            _create(payload.content);
             break;
         case constants.user.ALL_USERS:
-            _getAllUsers();
+            _all();
             break;
     } 
 });
 
-function _createUser(user) {
+function _create(user) {
     // persist().then(function() {
     store.add(user);
     emitter.emit(constants.user.USER_CREATED, user);
     // });
 }
 
-function _getAllUsers() {
+function _all() {
     // getFromServer().then(function(users) {
         var users = [
             { firstName: "Chris", lastName: "Harrington", email: "chrisharrington99@gmail.com", phone: "4037102038", role: "Relincd", company: "IONO", operatingArea: "the area" },

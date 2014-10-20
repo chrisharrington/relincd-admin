@@ -18,23 +18,14 @@ module.exports = React.createClass({
 			operatingAreas: [{ name: "Operating Area 1" }, { name: "Operating Area 2" }, { name: "Operating Area 3" }],
             errorMessage: "",
 			loading: false,
-            role: this.props.user ? this.props.user.role : "Role...",
 			roleError: false,
-			company: "Company...",
 			companyError: false,
-			operatingArea: "Operating Area...",
 			operatingAreaError: false,
-			firstName: "",
 			firstNameError: false,
-			lastName: "",
 			lastNameError: false,
-			phone: "",
 			phoneError: false,
-			email: "",
 			emailError: false,
-			password: "",
 			passwordError: false,
-			confirmedPassword: "",
 			confirmedPasswordError: false
         };
     },
@@ -43,12 +34,15 @@ module.exports = React.createClass({
         var me = this;
         emitter.on(constants.user.USER_CREATED, function(user) {
             $("#new-user-modal").modal("hide");
-            me.reset();
         });
+		
+		$("#user-modal").on("shown", function() {
+			me.user = _.clone(me.props.user);
+		});
 	},
     
 	reset: function() {
-		this.setState(this.getInitialState());	
+		//this.props.user = this.user;
 	},
 	
 	save: function() {
@@ -58,7 +52,6 @@ module.exports = React.createClass({
 		if (errors.length === 0) {
             var me = this;
             this.setState({ loading: true });
-            
             dispatcher.dispatch(UserActions.create(user));
         }
 		
@@ -103,9 +96,8 @@ module.exports = React.createClass({
 	},
 	
 	setDropdownData: function(key, value) {
-		var object = {};
-		object[key] = value;
-		this.setState(object);
+		this.props.user.set(key, value);
+		this.forceUpdate();
 	},
 	
 	setTextData: function(key, event) {
@@ -115,7 +107,7 @@ module.exports = React.createClass({
 	},
 	
 	render: function () {
-        return <div className="modal fade" id="new-user-modal" tabindex="-1" role="dialog"aria-hidden="true">
+        return <div className="modal fade" id="user-modal" tabindex="-1" role="dialog"aria-hidden="true">
           <div className="modal-dialog">
                 <div className="modal-content">
                     <div className="modal-header">
@@ -127,38 +119,75 @@ module.exports = React.createClass({
                     </div>
                     <div className="modal-body container">
 						<div className="row">
-							<div className="col col-md-4" data-validation-key="role">
-								<Dropdown error={this.state.roleError} placeholder={this.state.role} list={this.state.roles} select={this.setDropdownData.bind(this, "role")} />
+							<div className="col-md-4">
+								<label>Role</label>
 							</div>
-							<div className="col col-md-4 form-group">
-								<Dropdown error={this.state.companyError} placeholder={this.state.company} list={this.state.companies} select={this.setDropdownData.bind(this, "company")} />
-							</div>
-							<div className="col col-md-4 form-group">
-								<Dropdown error={this.state.operatingAreaError} placeholder={this.state.operatingArea} list={this.state.operatingAreas} select={this.setDropdownData.bind(this, "operatingArea")} />
+							<div className="col-md-8">
+								<Dropdown error={this.state.roleError} list={this.state.roles} select={this.setDropdownData.bind(this, "role")} value={this.props.user.get("role")} />
 							</div>
 						</div>
 						<div className="row">
-							<div className={"col col-md-6 form-group" + (this.state.firstNameError ? " has-error" : "")}>
-								<input type="text" className="form-control" value={this.props.user.attributes.firstName} onChange={this.setTextData.bind(this, "firstName")} placeholder="First name..." />
+							<div className="col-md-4">
+								<label>Company</label>
 							</div>
-							<div className={"col col-md-6 form-group" + (this.state.lastNameError ? " has-error" : "")}>
-								<input type="text" className="form-control" value={this.state.lastName} onChange={this.setTextData.bind(this, "lastName")} placeholder="Last name..." />
-							</div>
-						</div>
-						<div className="row">
-							<div className={"col col-md-6 form-group" + (this.state.phoneError ? " has-error" : "")}>
-								<input type="text" className="form-control" value={this.state.phone} onChange={this.setTextData.bind(this, "phone")} placeholder="Phone number..." />
-							</div>
-							<div className={"col col-md-6 form-group" + (this.state.emailError ? " has-error" : "")}>
-								<input type="text" className="form-control" value={this.state.email} onChange={this.setTextData.bind(this, "email")} placeholder="Email address..." />
+							<div className="col-md-8">
+								<Dropdown error={this.state.companyError} placeholder="Role..." list={this.state.companies} select={this.setDropdownData.bind(this, "company")} value={this.props.user.get("company")} />
 							</div>
 						</div>
 						<div className="row">
-							<div className={"col col-md-6 form-group" + (this.state.passwordError ? " has-error" : "")}>
-								<input type="password" className="form-control" value={this.state.password} onChange={this.setTextData.bind(this, "password")} placeholder="Password..." />
+							<div className="col-md-4">
+								<label>Operating Area</label>
 							</div>
-							<div className={"col col-md-6 form-group" + (this.state.confirmedPasswordError ? " has-error" : "")}>
-								<input type="password" className="form-control" value={this.state.confirmedPassword} onChange={this.setTextData.bind(this, "confirmedPassword")} placeholder="Confirm password..." />
+							<div className="col-md-8">
+								<Dropdown error={this.state.operatingAreaError} placeholder="Role..." list={this.state.operatingAreas} select={this.setDropdownData.bind(this, "operatingArea")} value={this.props.user.get("operatingArea")} />
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-md-4">
+								<label>First Name</label>
+							</div>
+							<div className="col-md-8">
+								<input type="text" className="form-control" value={this.props.user.get("firstName")} onChange={this.setTextData.bind(this, "firstName")} />
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-md-4">
+								<label>Last Name</label>
+							</div>
+							<div className="col-md-8">
+								<input type="text" className="form-control" value={this.props.user.get("lastName")} onChange={this.setTextData.bind(this, "lastName")} />
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-md-4">
+								<label>Email Address</label>
+							</div>
+							<div className="col-md-8">
+								<input type="text" className="form-control" value={this.props.user.get("email")} onChange={this.setTextData.bind(this, "email")} />
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-md-4">
+								<label>Phone Number</label>
+							</div>
+							<div className="col-md-8">
+								<input type="text" className="form-control" value={this.props.user.get("phone")} onChange={this.setTextData.bind(this, "phone")} />
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-md-4">
+								<label>Password</label>
+							</div>
+							<div className="col-md-8">
+								<input type="password" className="form-control" value={this.props.user.get("password")} onChange={this.setTextData.bind(this, "password")} />
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-md-4">
+								<label>Confirmed Password</label>
+							</div>
+							<div className="col-md-8">
+								<input type="password" className="form-control" value={this.props.user.get("confirmedPassword")} onChange={this.setTextData.bind(this, "confirmedPassword")} />
 							</div>
 						</div>
                     </div>
