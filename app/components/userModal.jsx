@@ -44,7 +44,7 @@ module.exports = React.createClass({
 	},
 	
 	save: function() {
-		var user = _buildUser(this);
+		var user = this.props.user;
 		var errors = user.validate();
 		_setErrors(errors, this);
 		if (errors.length === 0) {
@@ -52,22 +52,6 @@ module.exports = React.createClass({
             this.setState({ loading: true });
             dispatcher.dispatch(UserActions.create(user));
         }
-		
-		function _buildUser(context) {
-			var initial = context.getInitialState();
-			
-			return new User({
-				role: context.state.role === initial.role ? undefined : context.state.role,
-				company: context.state.company === initial.company ? undefined : context.state.company,
-				operatingArea: context.state.operatingArea === initial.operatingArea ? undefined : context.state.operatingArea,
-				firstName: context.state.firstName,
-				lastName: context.state.lastName,
-				phone: context.state.phone,
-				email: context.state.email,
-				password: context.state.password,
-				confirmedPassword: context.state.confirmedPassword
-			});
-		}
 		
 		function _setErrors(errors, context) {
             var newState = {}, keyed = errors.dict("key"), count = 0, message;
@@ -95,7 +79,7 @@ module.exports = React.createClass({
 	
 	setDropdownData: function(key, value) {
 		this.props.user.set(key, value);
-		this.forceUpdate();
+	
 	},
 	
 	setTextData: function(key, event) {
@@ -121,7 +105,7 @@ module.exports = React.createClass({
 								<label>Role</label>
 							</div>
 							<div className="col-md-8">
-								<Dropdown error={this.state.roleError} list={this.state.roles} select={this.setDropdownData.bind(this, "role")} value={this.props.user.get("role")} />
+								<Dropdown error={this.state.roleError} list={this.state.roles} bindTo={this.props.user.role} />
 							</div>
 						</div>
 						<div className="row">
@@ -129,7 +113,7 @@ module.exports = React.createClass({
 								<label>Company</label>
 							</div>
 							<div className="col-md-8">
-								<Dropdown error={this.state.companyError} list={this.state.companies} select={this.setDropdownData.bind(this, "company")} value={this.props.user.get("company")} />
+								
 							</div>
 						</div>
 						<div className="row">
@@ -137,10 +121,10 @@ module.exports = React.createClass({
 								<label>Operating Area</label>
 							</div>
 							<div className="col-md-8">
-								<Dropdown error={this.state.operatingAreaError} list={this.state.operatingAreas} select={this.setDropdownData.bind(this, "operatingArea")} value={this.props.user.get("operatingArea")} />
+								
 							</div>
 						</div>
-						<div className="row">
+						<div className={"row" + (this.state.firstNameError ? " has-error" : "")}>
 							<div className="col-md-4">
 								<label>First Name</label>
 							</div>
@@ -148,7 +132,7 @@ module.exports = React.createClass({
 								<input type="text" className="form-control" value={this.props.user.get("firstName")} onChange={this.setTextData.bind(this, "firstName")} />
 							</div>
 						</div>
-						<div className="row">
+						<div className={"row" + (this.state.lastNameError ? " has-error" : "")}>
 							<div className="col-md-4">
 								<label>Last Name</label>
 							</div>
@@ -156,7 +140,7 @@ module.exports = React.createClass({
 								<input type="text" className="form-control" value={this.props.user.get("lastName")} onChange={this.setTextData.bind(this, "lastName")} />
 							</div>
 						</div>
-						<div className="row">
+						<div className={"row" + (this.state.emailError ? " has-error" : "")}>
 							<div className="col-md-4">
 								<label>Email Address</label>
 							</div>
@@ -164,7 +148,7 @@ module.exports = React.createClass({
 								<input type="text" className="form-control" value={this.props.user.get("email")} onChange={this.setTextData.bind(this, "email")} />
 							</div>
 						</div>
-						<div className="row">
+						<div className={"row" + (this.state.phoneError ? " has-error" : "")}>
 							<div className="col-md-4">
 								<label>Phone Number</label>
 							</div>
@@ -172,7 +156,7 @@ module.exports = React.createClass({
 								<input type="text" className="form-control" value={this.props.user.get("phone")} onChange={this.setTextData.bind(this, "phone")} />
 							</div>
 						</div>
-						<div className="row">
+						<div className={"row" + (this.state.passwordError ? " has-error" : "")}>
 							<div className="col-md-4">
 								<label>Password</label>
 							</div>
@@ -180,7 +164,7 @@ module.exports = React.createClass({
 								<input type="password" className="form-control" value={this.props.user.get("password")} onChange={this.setTextData.bind(this, "password")} />
 							</div>
 						</div>
-						<div className="row">
+						<div className={"row" + (this.state.confirmedPasswordError ? " has-error" : "")}>
 							<div className="col-md-4">
 								<label>Confirmed Password</label>
 							</div>

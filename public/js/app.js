@@ -167,16 +167,23 @@ require.register("components/dropdown", function(exports, require, module) {
 
 var React = require("react");
 
-module.exports = React.createClass({displayName: 'exports',	
+module.exports = React.createClass({displayName: 'exports',
+	select: function(value) {
+		this.props.bindTo = value;
+		this.forceUpdate();
+	},
+	
 	render: function () {
-		var list = this.props.list;
+		var value = this.props.bindTo || (this.props.list.length > 0 ? this.props.list[0].get("name") : undefined);
+		if (!value)
+			this.props.bindTo = value;
 		var items = [];
 		for (var i = 0; i < this.props.list.length; i++)
-			items.push(React.DOM.li({role: "presentation", onClick: this.props.select.bind(this, this.props.list[i].get("name"))}, React.DOM.a({role: "menuitem", tabindex: "-1"}, this.props.list[i].get("name"))));
+			items.push(React.DOM.li({role: "presentation", onClick: this.select.bind(this, this.props.list[i].get("name"))}, React.DOM.a({role: "menuitem", tabindex: "-1"}, this.props.list[i].get("name"))));
 		
         return React.DOM.div({className: "dropdown" + (this.props.error ? " error" : "")}, 
             React.DOM.button({className: "btn btn-default dropdown-toggle", type: "button", id: "dropdownMenu1", 'data-toggle': "dropdown"}, 
-				this.props.value, 
+				value, 
                 React.DOM.i({className: "fa fa-caret-down"})
             ), 
             React.DOM.ul({className: "dropdown-menu", role: "menu", 'aria-labelledby': "dropdownMenu1"}, 
@@ -352,7 +359,7 @@ module.exports = React.createClass({displayName: 'exports',
 	},
 	
 	save: function() {
-		var user = _buildUser(this);
+		var user = this.props.user;
 		var errors = user.validate();
 		_setErrors(errors, this);
 		if (errors.length === 0) {
@@ -360,22 +367,6 @@ module.exports = React.createClass({displayName: 'exports',
             this.setState({ loading: true });
             dispatcher.dispatch(UserActions.create(user));
         }
-		
-		function _buildUser(context) {
-			var initial = context.getInitialState();
-			
-			return new User({
-				role: context.state.role === initial.role ? undefined : context.state.role,
-				company: context.state.company === initial.company ? undefined : context.state.company,
-				operatingArea: context.state.operatingArea === initial.operatingArea ? undefined : context.state.operatingArea,
-				firstName: context.state.firstName,
-				lastName: context.state.lastName,
-				phone: context.state.phone,
-				email: context.state.email,
-				password: context.state.password,
-				confirmedPassword: context.state.confirmedPassword
-			});
-		}
 		
 		function _setErrors(errors, context) {
             var newState = {}, keyed = errors.dict("key"), count = 0, message;
@@ -403,7 +394,7 @@ module.exports = React.createClass({displayName: 'exports',
 	
 	setDropdownData: function(key, value) {
 		this.props.user.set(key, value);
-		this.forceUpdate();
+	
 	},
 	
 	setTextData: function(key, event) {
@@ -429,26 +420,26 @@ module.exports = React.createClass({displayName: 'exports',
 								React.DOM.label(null, "Role")
 							), 
 							React.DOM.div({className: "col-md-8"}, 
-								Dropdown({error: this.state.roleError, list: this.state.roles, select: this.setDropdownData.bind(this, "role"), value: this.props.user.get("role")})
+								Dropdown({error: this.state.roleError, list: this.state.roles, bindTo: this.props.user.role})
 							)
 						), 
 						React.DOM.div({className: "row"}, 
 							React.DOM.div({className: "col-md-4"}, 
 								React.DOM.label(null, "Company")
 							), 
-							React.DOM.div({className: "col-md-8"}, 
-								Dropdown({error: this.state.companyError, list: this.state.companies, select: this.setDropdownData.bind(this, "company"), value: this.props.user.get("company")})
+							React.DOM.div({className: "col-md-8"}
+								
 							)
 						), 
 						React.DOM.div({className: "row"}, 
 							React.DOM.div({className: "col-md-4"}, 
 								React.DOM.label(null, "Operating Area")
 							), 
-							React.DOM.div({className: "col-md-8"}, 
-								Dropdown({error: this.state.operatingAreaError, list: this.state.operatingAreas, select: this.setDropdownData.bind(this, "operatingArea"), value: this.props.user.get("operatingArea")})
+							React.DOM.div({className: "col-md-8"}
+								
 							)
 						), 
-						React.DOM.div({className: "row"}, 
+						React.DOM.div({className: "row" + (this.state.firstNameError ? " has-error" : "")}, 
 							React.DOM.div({className: "col-md-4"}, 
 								React.DOM.label(null, "First Name")
 							), 
@@ -456,7 +447,7 @@ module.exports = React.createClass({displayName: 'exports',
 								React.DOM.input({type: "text", className: "form-control", value: this.props.user.get("firstName"), onChange: this.setTextData.bind(this, "firstName")})
 							)
 						), 
-						React.DOM.div({className: "row"}, 
+						React.DOM.div({className: "row" + (this.state.lastNameError ? " has-error" : "")}, 
 							React.DOM.div({className: "col-md-4"}, 
 								React.DOM.label(null, "Last Name")
 							), 
@@ -464,7 +455,7 @@ module.exports = React.createClass({displayName: 'exports',
 								React.DOM.input({type: "text", className: "form-control", value: this.props.user.get("lastName"), onChange: this.setTextData.bind(this, "lastName")})
 							)
 						), 
-						React.DOM.div({className: "row"}, 
+						React.DOM.div({className: "row" + (this.state.emailError ? " has-error" : "")}, 
 							React.DOM.div({className: "col-md-4"}, 
 								React.DOM.label(null, "Email Address")
 							), 
@@ -472,7 +463,7 @@ module.exports = React.createClass({displayName: 'exports',
 								React.DOM.input({type: "text", className: "form-control", value: this.props.user.get("email"), onChange: this.setTextData.bind(this, "email")})
 							)
 						), 
-						React.DOM.div({className: "row"}, 
+						React.DOM.div({className: "row" + (this.state.phoneError ? " has-error" : "")}, 
 							React.DOM.div({className: "col-md-4"}, 
 								React.DOM.label(null, "Phone Number")
 							), 
@@ -480,7 +471,7 @@ module.exports = React.createClass({displayName: 'exports',
 								React.DOM.input({type: "text", className: "form-control", value: this.props.user.get("phone"), onChange: this.setTextData.bind(this, "phone")})
 							)
 						), 
-						React.DOM.div({className: "row"}, 
+						React.DOM.div({className: "row" + (this.state.passwordError ? " has-error" : "")}, 
 							React.DOM.div({className: "col-md-4"}, 
 								React.DOM.label(null, "Password")
 							), 
@@ -488,7 +479,7 @@ module.exports = React.createClass({displayName: 'exports',
 								React.DOM.input({type: "password", className: "form-control", value: this.props.user.get("password"), onChange: this.setTextData.bind(this, "password")})
 							)
 						), 
-						React.DOM.div({className: "row"}, 
+						React.DOM.div({className: "row" + (this.state.confirmedPasswordError ? " has-error" : "")}, 
 							React.DOM.div({className: "col-md-4"}, 
 								React.DOM.label(null, "Confirmed Password")
 							), 
@@ -861,8 +852,9 @@ module.exports = {
 	},
 	
 	phone: function(value) {
-		value = value.replace(/[\D]/g, "");
-		return value.length === 10;
+		if (value)
+			value = value.replace(/[\D]/g, "");
+		return value === undefined || value.length === 10;
 	},
 	
 	email: function(value) {
