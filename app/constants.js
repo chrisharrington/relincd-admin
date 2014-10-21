@@ -2,13 +2,22 @@ module.exports = {
 	VIEW_ACTION: "view-action",
 	
     user: {
-        CREATE_USER: "create-user",
-        USER_CREATED: "user-created",
-        
-        ALL_USERS: "all-users"
+        ALL: "all-users",
+		CREATE: "create-user"
     },
 	
 	role: {
-		ALL: "all-roles"
+		ALL: "all-roles",
+		CREATE: "create-role",
+	},
+	
+	company: {
+		ALL: "all-companies",
+		CREATE: "create-company"
+	},
+	
+	operatingArea: {
+		ALL: "all-operating-areas",
+		CREATE: "create-operating-area"
 	}
 };

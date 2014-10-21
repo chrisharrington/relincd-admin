@@ -90,42 +90,57 @@
   globals.require.list = list;
   globals.require.brunch = true;
 })();
-require.register("actions/role", function(exports, require, module) {
-var constants = require("../constants");
-
-module.exports = {
-    all: function() {
-        return {
-            type: constants.user.ALL_USERS
-        };  
-    },
-    
-	create: function(user) {
+require.register("actions/base", function(exports, require, module) {
+module.exports = function(constants) {
+	this.all = function() {
 		return {
-			type: constants.user.CREATE_USER,
-			content: user
+			type: constants.ALL
 		};
-	}
+	};
+	
+	this.create = function(content) {
+		return {
+			type: constants.CREATE,
+			content: content
+		};
+	};
 };
 });
 
-require.register("actions/user", function(exports, require, module) {
-var constants = require("../constants");
+require.register("actions/company", function(exports, require, module) {
+var constants = require("../constants"),
+	BaseAction = require("actions/base");
 
-module.exports = {
-    all: function() {
-        return {
-            type: constants.user.ALL_USERS
-        };  
-    },
-    
-	create: function(user) {
-		return {
-			type: constants.user.CREATE_USER,
-			content: user
-		};
-	}
-};
+module.exports = new BaseAction(constants.company);
+});
+
+require.register("actions/index", function(exports, require, module) {
+var actions = {}, location = "actions/";
+["role", "user", "company", "operatingArea"].forEach(function(action) {
+	actions[action] = require(location + action);
+});
+module.exports = actions;
+});
+
+require.register("actions/operatingArea", function(exports, require, module) {
+var BaseAction = require("actions/base"),
+	constants = require("constants");
+
+module.exports = new BaseAction(constants.operatingArea);
+});
+
+require.register("actions/role", function(exports, require, module) {
+var BaseAction = require("actions/base"),
+	constants = require("../constants");
+
+module.exports = new BaseAction(constants.role);
+});
+
+require.register("actions/user", function(exports, require, module) {
+var BaseAction = require("actions/base"),
+	constants = require("../constants");
+
+module.exports = new BaseAction(constants.user);
 });
 
 require.register("application", function(exports, require, module) {
@@ -154,9 +169,10 @@ var React = require("react");
 
 module.exports = React.createClass({displayName: 'exports',	
 	render: function () {
+		var list = this.props.list;
 		var items = [];
 		for (var i = 0; i < this.props.list.length; i++)
-			items.push(React.DOM.li({role: "presentation", onClick: this.props.select.bind(this, this.props.list[i].name)}, React.DOM.a({role: "menuitem", tabindex: "-1"}, this.props.list[i].name)));
+			items.push(React.DOM.li({role: "presentation", onClick: this.props.select.bind(this, this.props.list[i].get("name"))}, React.DOM.a({role: "menuitem", tabindex: "-1"}, this.props.list[i].get("name"))));
 		
         return React.DOM.div({className: "dropdown" + (this.props.error ? " error" : "")}, 
             React.DOM.button({className: "btn btn-default dropdown-toggle", type: "button", id: "dropdownMenu1", 'data-toggle': "dropdown"}, 
@@ -238,9 +254,9 @@ module.exports = React.createClass({displayName: 'exports',
     componentWillMount: function() {
         var me = this;
         
-        emitter.on(constants.user.ALL_USERS, function(users) {
-            me.setState({ users: users });
-        });
+        emitter.on(constants.user.ALL, function(users) {
+			me.setState({ users: users });
+		});
         
         emitter.on(constants.user.USER_CREATED, function(user) {
             var users = me.state.users;
@@ -305,9 +321,9 @@ var React = require("react"),
 module.exports = React.createClass({displayName: 'exports',
     getInitialState: function() {
         return {
-            roles: [{ name: "Supervisor" }, { name: "Operator" }, { name: "Company Admin" }, { name: "Relincd" }],
-			companies: [{ name: "Test Company 1" }, { name: "Test Company 2" }, { name: "Test Company 3" }],
-			operatingAreas: [{ name: "Operating Area 1" }, { name: "Operating Area 2" }, { name: "Operating Area 3" }],
+            roles: [],
+			companies: [],
+			operatingAreas: [],
             errorMessage: "",
 			loading: false,
 			roleError: false,
@@ -324,13 +340,11 @@ module.exports = React.createClass({displayName: 'exports',
 	
 	componentWillMount: function() {
         var me = this;
-        emitter.on(constants.user.USER_CREATED, function(user) {
-            $("#new-user-modal").modal("hide");
-        });
-		
-		$("#user-modal").on("shown", function() {
-			me.user = _.clone(me.props.user);
-		});
+        emitter.on(constants.user.USER_CREATED, function(user) { $("#new-user-modal").modal("hide"); });
+		emitter.on(constants.role.ALL, function(roles) { me.setState({ roles: roles }); });
+		emitter.on(constants.company.ALL, function(companies) { me.setState({ companies: companies }); });
+		emitter.on(constants.operatingArea.ALL, function(operatingAreas) { me.setState({ operatingAreas: operatingAreas }); });
+		$("#user-modal").on("shown", function() { me.user = _.clone(me.props.user); });
 	},
     
 	reset: function() {
@@ -423,7 +437,7 @@ module.exports = React.createClass({displayName: 'exports',
 								React.DOM.label(null, "Company")
 							), 
 							React.DOM.div({className: "col-md-8"}, 
-								Dropdown({error: this.state.companyError, placeholder: "Role...", list: this.state.companies, select: this.setDropdownData.bind(this, "company"), value: this.props.user.get("company")})
+								Dropdown({error: this.state.companyError, list: this.state.companies, select: this.setDropdownData.bind(this, "company"), value: this.props.user.get("company")})
 							)
 						), 
 						React.DOM.div({className: "row"}, 
@@ -431,7 +445,7 @@ module.exports = React.createClass({displayName: 'exports',
 								React.DOM.label(null, "Operating Area")
 							), 
 							React.DOM.div({className: "col-md-8"}, 
-								Dropdown({error: this.state.operatingAreaError, placeholder: "Role...", list: this.state.operatingAreas, select: this.setDropdownData.bind(this, "operatingArea"), value: this.props.user.get("operatingArea")})
+								Dropdown({error: this.state.operatingAreaError, list: this.state.operatingAreas, select: this.setDropdownData.bind(this, "operatingArea"), value: this.props.user.get("operatingArea")})
 							)
 						), 
 						React.DOM.div({className: "row"}, 
@@ -512,14 +526,23 @@ module.exports = {
 	VIEW_ACTION: "view-action",
 	
     user: {
-        CREATE_USER: "create-user",
-        USER_CREATED: "user-created",
-        
-        ALL_USERS: "all-users"
+        ALL: "all-users",
+		CREATE: "create-user"
     },
 	
 	role: {
-		ALL: "all-roles"
+		ALL: "all-roles",
+		CREATE: "create-role",
+	},
+	
+	company: {
+		ALL: "all-companies",
+		CREATE: "create-company"
+	},
+	
+	operatingArea: {
+		ALL: "all-operating-areas",
+		CREATE: "create-operating-area"
 	}
 };
 });
@@ -588,27 +611,56 @@ var app = require("application"),
 	Header = require("components/header"),
     Controller = require("controller"),
     Router = require("router"),
+	Actions = require("actions"),
 	
 	constants = require("constants"),
-	rolesStore = require("stores/roles"),
-	emitter = require("dispatcher/emitter");
+	dispatcher = require("dispatcher/dispatcher"),
+	stores = require("stores");
 
 require("extensions");
 require("stores");
 
 $(function () {
+	app.data = {};
     app.addInitializer(function initializeRouter() {
         new Router({controller: new Controller({container: $("#app")[0]})});
 		React.renderComponent(new Header(), $("header")[0]);
 		
-		rolesStore.all().then(function(roles) {
-			debugger;
-		});
+		dispatcher.dispatch(Actions["role"].all());
+		dispatcher.dispatch(Actions["company"].all());
+		dispatcher.dispatch(Actions["operatingArea"].all());
+		dispatcher.dispatch(Actions["user"].all());
     });
 
     app.start();
 });
 
+});
+
+require.register("models/company", function(exports, require, module) {
+var validation = require("utilities/validation");
+
+module.exports = Backbone.Model.extend({
+	validate: function() {
+		var attrs = this.attributes, errors = [];
+		if (!validation.require(attrs.name))
+			errors.push({ key: "name", message: "The name is required." });
+        return errors;
+	}
+});
+});
+
+require.register("models/operatingArea", function(exports, require, module) {
+var validation = require("utilities/validation");
+
+module.exports = Backbone.Model.extend({
+	validate: function() {
+		var attrs = this.attributes, errors = [];
+		if (!validation.require(attrs.name))
+			errors.push({ key: "name", message: "The name is required." });
+        return errors;
+	}
+});
 });
 
 require.register("models/role", function(exports, require, module) {
@@ -717,35 +769,68 @@ var Config = require("config"),
 	Backbone = require("backbone"),
 	
 	emitter = require("dispatcher/emitter"),
+	dispatcher = require("dispatcher/dispatcher"),
 	constants = require("constants");
 
 module.exports = function(model, constants, url) {
-	var _constants = constants;
-	var _store = Backbone.Collection.extend({ model: model, url: url });
+	var Collection = Backbone.Collection.extend({ model: model, url: url });
+	var constants = constants, me = this, collection = new Collection;
 	
 	this.all = function() {
 		return new Promise(function(resolve, reject) {
-			_store.fetch({
-				success: function(collection, response) {
-					emitter.emit(_constants.ALL, collection.models);
-					resolve(collection.models);
-				},
-				error: function(a, b, c) {
-					debugger;
+			collection.fetch({
+				success: function(result, response) {
+					var models = result.models;
+					resolve(models);
+					emitter.emit(constants.ALL, models);
 				}
 			});
 		});
 	};
+	
+	dispatcher.register(function(payload) {
+		switch (payload.type) {
+			case constants.ALL:
+				me.all();
+				break;
+		}
+	});
 };
 });
 
-require.register("stores/index", function(exports, require, module) {
-["user"].forEach(function(location) {
-    require("stores/" + location);  
-});
+require.register("stores/company", function(exports, require, module) {
+/* jshint node: true */
+"use strict";
+
+var Company = require("models/company"),
+	BaseStore = require("stores/base"),
+	
+	constants = require("constants");
+
+module.exports = new BaseStore(Company, constants.company, "fixtures/companies.json");
 });
 
-require.register("stores/roles", function(exports, require, module) {
+require.register("stores/index", function(exports, require, module) {
+var stores = {};
+["user", "company", "operatingArea", "role"].forEach(function(location) {
+    stores[location] = require("stores/" + location);  
+});
+module.exports = stores;
+});
+
+require.register("stores/operatingArea", function(exports, require, module) {
+/* jshint node: true */
+"use strict";
+
+var OperatingArea = require("models/role"),
+	BaseStore = require("stores/base"),
+	
+	constants = require("constants");
+
+module.exports = new BaseStore(OperatingArea, constants.operatingArea, "fixtures/operatingAreas.json");
+});
+
+require.register("stores/role", function(exports, require, module) {
 /* jshint node: true */
 "use strict";
 
@@ -761,51 +846,12 @@ require.register("stores/user", function(exports, require, module) {
 /* jshint node: true */
 "use strict";
 
-var Backbone = require("backbone"),
-	Model = require("models/user"),
-    
-    dispatcher = require("dispatcher/dispatcher"),
-    emitter = require("dispatcher/emitter"),
+var User = require("models/role"),
+	BaseStore = require("stores/base"),
+	
 	constants = require("constants");
 
-var Store = Backbone.Collection.extend({ model: Model });
-
-var store = new Store();
-
-store.token = dispatcher.register(function(payload) {
-    switch (payload.type) {
-        case constants.user.CREATE_USER:
-            _create(payload.content);
-            break;
-        case constants.user.ALL_USERS:
-            _all();
-            break;
-    } 
-});
-
-function _create(user) {
-    // persist().then(function() {
-    store.add(user);
-    emitter.emit(constants.user.USER_CREATED, user);
-    // });
-}
-
-function _all() {
-    // getFromServer().then(function(users) {
-        var users = [
-            { firstName: "Chris", lastName: "Harrington", email: "chrisharrington99@gmail.com", phone: "4037102038", role: "Relincd", company: "IONO", operatingArea: "the area" },
-            { firstName: "Sarah", lastName: "Harrington", email: "chrisharrington99@gmail.com", phone: "4037102038", role: "Relincd", company: "IONO", operatingArea: "the area" },
-            { firstName: "Quinn", lastName: "Harrington", email: "chrisharrington99@gmail.com", phone: "4037102038", role: "Relincd", company: "IONO", operatingArea: "the area" },
-            { firstName: "Zoe", lastName: "Harrington", email: "chrisharrington99@gmail.com", phone: "4037102038", role: "Relincd", company: "IONO", operatingArea: "the area" },
-            { firstName: "Bandito", lastName: "Harrington", email: "chrisharrington99@gmail.com", phone: "4037102038", role: "Relincd", company: "IONO", operatingArea: "the area" }
-        ];
-        emitter.emit(constants.user.ALL_USERS, users.map(function(user) {
-            return new Model(user);
-        }));
-    //});
-}
-
-module.exports = store;
+module.exports = new BaseStore(User, constants.user, "fixtures/users.json");
 });
 
 require.register("utilities/validation", function(exports, require, module) {

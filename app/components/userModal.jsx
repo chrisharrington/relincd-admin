@@ -13,9 +13,9 @@ var React = require("react"),
 module.exports = React.createClass({
     getInitialState: function() {
         return {
-            roles: [{ name: "Supervisor" }, { name: "Operator" }, { name: "Company Admin" }, { name: "Relincd" }],
-			companies: [{ name: "Test Company 1" }, { name: "Test Company 2" }, { name: "Test Company 3" }],
-			operatingAreas: [{ name: "Operating Area 1" }, { name: "Operating Area 2" }, { name: "Operating Area 3" }],
+            roles: [],
+			companies: [],
+			operatingAreas: [],
             errorMessage: "",
 			loading: false,
 			roleError: false,
@@ -32,13 +32,11 @@ module.exports = React.createClass({
 	
 	componentWillMount: function() {
         var me = this;
-        emitter.on(constants.user.USER_CREATED, function(user) {
-            $("#new-user-modal").modal("hide");
-        });
-		
-		$("#user-modal").on("shown", function() {
-			me.user = _.clone(me.props.user);
-		});
+        emitter.on(constants.user.USER_CREATED, function(user) { $("#new-user-modal").modal("hide"); });
+		emitter.on(constants.role.ALL, function(roles) { me.setState({ roles: roles }); });
+		emitter.on(constants.company.ALL, function(companies) { me.setState({ companies: companies }); });
+		emitter.on(constants.operatingArea.ALL, function(operatingAreas) { me.setState({ operatingAreas: operatingAreas }); });
+		$("#user-modal").on("shown", function() { me.user = _.clone(me.props.user); });
 	},
     
 	reset: function() {
@@ -131,7 +129,7 @@ module.exports = React.createClass({
 								<label>Company</label>
 							</div>
 							<div className="col-md-8">
-								<Dropdown error={this.state.companyError} placeholder="Role..." list={this.state.companies} select={this.setDropdownData.bind(this, "company")} value={this.props.user.get("company")} />
+								<Dropdown error={this.state.companyError} list={this.state.companies} select={this.setDropdownData.bind(this, "company")} value={this.props.user.get("company")} />
 							</div>
 						</div>
 						<div className="row">
@@ -139,7 +137,7 @@ module.exports = React.createClass({
 								<label>Operating Area</label>
 							</div>
 							<div className="col-md-8">
-								<Dropdown error={this.state.operatingAreaError} placeholder="Role..." list={this.state.operatingAreas} select={this.setDropdownData.bind(this, "operatingArea")} value={this.props.user.get("operatingArea")} />
+								<Dropdown error={this.state.operatingAreaError} list={this.state.operatingAreas} select={this.setDropdownData.bind(this, "operatingArea")} value={this.props.user.get("operatingArea")} />
 							</div>
 						</div>
 						<div className="row">

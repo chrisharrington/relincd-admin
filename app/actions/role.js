@@ -1,16 +1,4 @@
-var constants = require("../constants");
+var BaseAction = require("actions/base"),
+	constants = require("../constants");
 
-module.exports = {
-    all: function() {
-        return {
-            type: constants.user.ALL_USERS
-        };  
-    },
-    
-	create: function(user) {
-		return {
-			type: constants.user.CREATE_USER,
-			content: user
-		};
-	}
-};
+module.exports = new BaseAction(constants.role);

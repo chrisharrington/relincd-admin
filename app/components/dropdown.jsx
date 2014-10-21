@@ -7,7 +7,7 @@ module.exports = React.createClass({
 	render: function () {
 		var items = [];
 		for (var i = 0; i < this.props.list.length; i++)
-			items.push(<li role="presentation" onClick={this.props.select.bind(this, this.props.list[i].name)}><a role="menuitem" tabindex="-1">{this.props.list[i].name}</a></li>);
+			items.push(<li role="presentation" onClick={this.props.select.bind(this, this.props.list[i].get("name"))}><a role="menuitem" tabindex="-1">{this.props.list[i].get("name")}</a></li>);
 		
         return <div className={"dropdown" + (this.props.error ? " error" : "")}>
             <button className="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">

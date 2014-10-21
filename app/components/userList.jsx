@@ -18,9 +18,9 @@ module.exports = React.createClass({
     componentWillMount: function() {
         var me = this;
         
-        emitter.on(constants.user.ALL_USERS, function(users) {
-            me.setState({ users: users });
-        });
+        emitter.on(constants.user.ALL, function(users) {
+			me.setState({ users: users });
+		});
         
         emitter.on(constants.user.USER_CREATED, function(user) {
             var users = me.state.users;
